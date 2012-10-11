@@ -105,8 +105,9 @@ class Wiki(object):
 
 	def delete(self, url):
 		path = self.path(url)
-		if self.exists(url):
+		if not self.exists(url):
 			return False
+		print path
 		os.remove(path)
 		return True
 
