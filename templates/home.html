@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title -%}
+	Welcome to your new wiki!
+{% endblock title %}
+
+{% block content %}
+<p>You did not create any content yet. Your wiki recommends you, to do so now, as every user will see this page first, and you would want to make a good impression, wouldn't you?</p>
+<p><a href="{{ url_for('edit', url='home') }}" class="btn btn-success">Create a homepage</a></p>
+{% endblock %}

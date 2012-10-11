@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Index by Tags{% endblock title %}
+
+{% block content %}
+{% if tags %}
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Tag</th>
+				<th>Number of Articles</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for tag in tags %}
+				<tr>
+					<td><a href="{{ url_for('tag', name=tag) }}">{{ tag }}</a></td>
+					<td>{{ tags[tag]|length }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% else %}
+	<p>There are no tags in use so far.</p>
+{% endif %}
+{% endblock content %}

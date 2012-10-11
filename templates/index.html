@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Page Index{% endblock title %}
+
+{% block content %}
+{% if pages %}
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Title</th>
+				<th>URL</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for page in pages %}
+				<tr>
+					<td><a href="{{ url_for('display', url=page.url) }}">{{ page.title }}</a></td>
+					<td><a href="{{ url_for('display', url=page.url) }}">{{ page.url }}</a></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% else %}
+	<p>There are no pages yet.</p>
+{% endif %}
+{% endblock content %}
+
+{% block sidebar %}
+<ul class="nav nav-tabs nav-stacked">
+	<li><a href="#">New Page</a></li>
+	<li><a href="#">Tag List</a></li>
+	<li><a href="#">Search</a></li>
+</ul>
+{% endblock sidebar %}

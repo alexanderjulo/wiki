@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}
+	{{ page.title }}
+{% endblock title %}
+
+{% block content %}
+	{{ page }}
+{% endblock content %}
+
+{% block sidebar %}
+<ul class="nav nav-tabs nav-stacked">
+	<li><a href="{{ url_for('edit', url=page.url) }}">Edit</a></li>
+	<li><a href="{{ url_for('delete', url=page.url) }}" class="text-error">Delete</a></li>
+</ul>
+{% endblock sidebar %}

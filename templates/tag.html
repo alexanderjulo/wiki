@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Pages tagged {{ tag }}{% endblock title %}
+
+{% block content %}
+{% if pages %}
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Title</th>
+				<th>URL</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for page in pages %}
+				<tr>
+					<td><a href="{{ url_for('display', url=page.url) }}">{{ page.title }}</a></td>
+					<td><a href="{{ url_for('display', url=page.url) }}">{{ page.url }}</a></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% else %}
+	<p>There are no pages tagged {{ tag }}.</p>
+{% endif %}
+{% endblock content %}

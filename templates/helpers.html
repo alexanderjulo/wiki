@@ -1,0 +1,26 @@
+{% macro input(field) -%}
+	<div class="control-group {% if field.errors %}error{% endif %}">
+		{% if field.type == 'BooleanField' %}
+			<div class="controls">
+				<label for="{{ field.name }}" class="checkbox">
+					{{ field(**kwargs) }}
+					{{ field.label.text }}
+				</label>
+			</div>
+		{% else %}
+			<label for="{{ field.name }}" class="control-label">{{ field.label.text }}</label>
+			<div class="controls">
+				{{ field(**kwargs) }}
+				{% if field.errors %}
+					<div>
+						{% for error in field.errors %}
+							<span class="help-inline">
+								{{ error }}
+							</span>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		{% endif %}
+	</div>
+{%- endmacro %}
