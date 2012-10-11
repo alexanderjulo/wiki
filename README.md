@@ -2,7 +2,7 @@
 
 ## About
 As I wanted a wiki that just uses plain markdown files as backend, is easy to
-user and is written in python, so I could easily hack around, but found nothing
+use and is written in python, so I could easily hack around, but found nothing
 I just wrote this down. I hope that it might help others to.
 
 ## Features
@@ -23,7 +23,7 @@ I just wrote this down. I hope that it might help others to.
 
 * Speed Improvements
 	* Code Optimizations
-	* Cachings
+	* Caching
 * Wikilinks-Support
 * Access protection (for private wikis or to limit edits to a known group)
 * Settings via the webinterface
