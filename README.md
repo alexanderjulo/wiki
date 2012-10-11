@@ -1,9 +1,9 @@
 # Readme
 
 ## About
-As I wanted a wiki that just uses plain markdown files as backend, is easy to
-use and is written in python, so I could easily hack around, but found nothing
-I just wrote this down. I hope that it might help others to.
+As I wanted a wiki that just uses plain markdown files as backend, that is easy
+to use and that is written in python, to enable me to easily hack around,
+but found nothing, I just wrote this down. I hope that it might help others ,too.
 
 ## Features
 
