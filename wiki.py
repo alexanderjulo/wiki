@@ -15,7 +15,7 @@ class Page(object):
 
 	def load(self):
 		with open(self.path) as f:
-			self.content = f.read()
+			self.content = f.read().decode('utf-8')
 
 	def render(self):
 		md = markdown.Markdown(['codehilite', 'meta'])
@@ -29,9 +29,9 @@ class Page(object):
 			os.makedirs(folder)
 		with open(self.path, 'w') as f:
 			for key, value in self._meta.items():
-				f.write('%s: %s\n' % (key, value))
-			f.write('\n')
-			f.write(self.body)
+				f.write('%s: %s\n'.encode('utf-8') % (key, value))
+			f.write('\n'.encode('utf-8'))
+			f.write(self.body.encode('utf-8'))
 		if update:
 			self.load()
 			self.render()
