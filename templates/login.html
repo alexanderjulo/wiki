@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock title %}
+
+{% block content %}
+<form class="form form-inline" method="POST">
+	{{ form.hidden_tag() }}
+	{{ form.name(placeholder='Username') }}
+	{{ form.password(placeholder='Password') }}
+	<input type="submit" class="btn btn-primary" value="Login">
+</form>
+{% endblock content %}
