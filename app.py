@@ -31,7 +31,7 @@ class Page(object):
 			self.content = f.read().decode('utf-8')
 
 	def render(self):
-		md = markdown.Markdown(['codehilite', 'meta'])
+		md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
 		self._html = md.convert(self.content)
 		self.body = self.content.split('\n\n')[1]
 		self._meta = md.Meta
