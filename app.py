@@ -37,7 +37,10 @@ class Page(object):
 		self._meta = md.Meta
 
 	def save(self, update=True):
-		folder = '/'.join(os.path.join(self.path).split('/')[:-1])
+		pathStyle = '/'
+		if os.name == 'nt':
+			pathStyle = '\\'
+		folder = pathStyle.join(os.path.join(self.path).split(pathStyle)[:-1])
 		if not os.path.exists(folder):
 			os.makedirs(folder)
 		with open(self.path, 'w') as f:
