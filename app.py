@@ -295,6 +295,8 @@ class CreateForm(Form):
 		# Cleans the url and corrects various errors.
 		# Remove multiple spaces and leading and trailing spaces
 		pageStub = re.sub('[ ]{2,}', ' ', url).strip()
+		# Changes spaces to underscores and make everything lowercase
+		pageStub = pageStub.lower().replace(' ', '_')
 		return pageStub
 
 class SearchForm(Form):
