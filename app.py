@@ -324,6 +324,7 @@ class LoginForm(Form):
 
 app = Flask(__name__)
 app.config['CONTENT_DIR'] = 'content'
+app.config['TITLE'] = 'wiki'
 try:
 	app.config.from_pyfile(os.path.join(app.config.get('CONTENT_DIR'), 'config.py'))
 except IOError:
