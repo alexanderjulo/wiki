@@ -27,8 +27,8 @@
 
 {% block sidebar %}
 <ul class="nav nav-tabs nav-stacked">
-	<li><a href="#">New Page</a></li>
-	<li><a href="#">Tag List</a></li>
-	<li><a href="#">Search</a></li>
+	<li><a href="{{ url_for('create') }}">New Page</a></li>
+	<li><a href="{{ url_for('tags') }}">Tag List</a></li>
+	<li><a href="{{ url_for('search') }}">Search</a></li>
 </ul>
 {% endblock sidebar %}
