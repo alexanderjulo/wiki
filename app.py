@@ -294,6 +294,14 @@ class CreateForm(Form):
 		if wiki.exists(field.data):
 			raise ValidationError('The URL "%s" exists already.' % field.data)
 
+	def clean_url(self, url):
+		# Cleans the url and corrects various errors.
+		# Remove multiple spaces and leading and trailing spaces
+		pageStub = re.sub('[ ]{2,}', ' ', url).strip()
+		# Changes spaces to underscores and make everything lowercase
+		pageStub = pageStub.lower().replace(' ', '_')
+		return pageStub
+
 class SearchForm(Form):
 	term = TextField('', [Required()])
 
@@ -378,7 +386,7 @@ def display(url):
 def create():
 	form = CreateForm()
 	if form.validate_on_submit():
-		return redirect(url_for('edit', url=form.url.data))
+		return redirect(url_for('edit', url=form.clean_url(form.url.data)))
 	return render_template('create.html', form=form)
 
 
