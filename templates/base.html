@@ -69,5 +69,12 @@
 				</div>
 			</div>
 		</div>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.0/jquery.min.js "></script>
+		<script type="text/javascript">
+			if (typeof jQuery == 'undefined') {
+				document.write(unescape("%3Cscript src='{{ url_for('static', filename='jquery.min.js') }}' type='text/javascript'%3E%3C/script%3E"));
+			}
+		</script>
+		<script src="/static/bootstrap.min.js"></script>
 	</body>
 </html>
