@@ -40,6 +40,7 @@ class Page(object):
 		pathStyle = '/'
 		if os.name == 'nt':
 			pathStyle = '\\'
+			self.path = self.path.replace('/', pathStyle)
 		folder = pathStyle.join(os.path.join(self.path).split(pathStyle)[:-1])
 		if not os.path.exists(folder):
 			os.makedirs(folder)
@@ -300,6 +301,8 @@ class CreateForm(Form):
 		pageStub = re.sub('[ ]{2,}', ' ', url).strip()
 		# Changes spaces to underscores and make everything lowercase
 		pageStub = pageStub.lower().replace(' ', '_')
+		# Corrects Windows style folders
+		pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
 		return pageStub
 
 class SearchForm(Form):
