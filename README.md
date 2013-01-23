@@ -36,9 +36,10 @@ that contains at least the following:
 
 	# encoding: <your encoding (probably utf-8)
 	SECRET_KEY='a unique and long key'
+	TITLE='Wiki' # Title Optional
 
 ## Start
-Afterwards just run the app however you want. I personally recommend something 
+Afterwards just run the app however you want. I personally recommend something
 like gunicorn:
 	
 	gunicorn app:app
