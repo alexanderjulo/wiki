@@ -5,12 +5,24 @@
 {% endblock title %}
 
 {% block content %}
+  <div id="confirmDelete" class="modal hide fade" aria-hidden="true">
+    <div class="modal-header">
+      <h3>Are you sure?</h3>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete {{ page.title }}?  This cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">No</a>
+      <a href="{{ url_for('delete', url=page.url) }}" class="btn btn-danger">Yes, delete.</a>
+    </div>
+  </div>
 	{{ page }}
 {% endblock content %}
 
 {% block sidebar %}
 <ul class="nav nav-tabs nav-stacked">
 	<li><a href="{{ url_for('edit', url=page.url) }}">Edit</a></li>
-	<li><a href="{{ url_for('delete', url=page.url) }}" class="text-error">Delete</a></li>
+  <li><a href="#confirmDelete" data-toggle="modal" class="text-error">Delete</a></li>
 </ul>
 {% endblock sidebar %}
