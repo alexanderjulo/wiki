@@ -269,6 +269,10 @@ class User(object):
 	def get_id(self):
 		return self.name
 
+	def check_password(self, password):
+		return password == self.get('password')
+
+
 def protect(f):
 	@wraps(f)
 	def wrapper(*args, **kwargs):
@@ -320,7 +324,7 @@ class LoginForm(Form):
 		user = users.get_user(form.name.data)
 		if not user:
 			return
-		if not field.data == user.get('password'):
+		if not user.check_password(field.data):
 			raise ValidationError('Username and password do not match.')
 
 
