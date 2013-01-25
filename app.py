@@ -1,3 +1,5 @@
+import binascii
+import hashlib
 import os
 import re
 import markdown
@@ -213,7 +215,7 @@ class UserManager(object):
 		if users.get(name):
 			return False
 		users[name] = {
-			'password': password,
+		    'hash': make_salted_hash(password),
 			'active': active,
 			'roles': roles,
 			'authenticated': False
@@ -270,7 +272,23 @@ class User(object):
 		return self.name
 
 	def check_password(self, password):
-		return password == self.get('password')
+		return check_password(password, self.get('hash'))
+
+
+def make_salted_hash(password, salt = os.urandom(64)):
+	d = hashlib.sha512()
+	d.update(salt[:32])
+	d.update(password)
+	d.update(salt[32:])
+	return binascii.hexlify(salt) + d.hexdigest()
+
+
+def extract_salt(salted_hash):
+	return binascii.unhexlify(salted_hash[:128])
+
+
+def check_password(password, salted_hash):
+	return make_salted_hash(password, extract_salt(salted_hash)) == salted_hash
 
 
 def protect(f):
