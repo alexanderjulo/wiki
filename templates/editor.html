@@ -17,8 +17,11 @@ Wiki Editor
 			{{ input(form.body, placeholder="Markdown", class="span7", rows="20") }}
 			{{ input(form.tags, placeholder="Tags (comma separated)", class="span7") }}
 			<div class="form-actions">
+        <div class="pull-left">
+          <a class="btn" href="#preview" id="previewbtn">Preview</a>
+        </div>
 				<div class="pull-right">
-					<a class="btn" href="#preview" id="previewbtn">Preview</a>
+          <a class="btn" href="{{ url_for('display', url=page.url) }}">Cancel</a>
 					<button class="btn btn-success" type="submit">Save</button>
 				</div>
 			</div>
