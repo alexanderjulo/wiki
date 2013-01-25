@@ -275,7 +275,9 @@ class User(object):
 		return check_password(password, self.get('hash'))
 
 
-def make_salted_hash(password, salt = os.urandom(64)):
+def make_salted_hash(password, salt = None):
+	if not salt:
+		salt = os.urandom(64)
 	d = hashlib.sha512()
 	d.update(salt[:32])
 	d.update(password)
