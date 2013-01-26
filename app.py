@@ -231,7 +231,7 @@ class UserManager(object):
 
 	def delete_user(self, name):
 		users = self.read()
-		if not self.pop(name):
+		if not users.pop(name, False):
 			return False
 		self.write(users)
 		return True
