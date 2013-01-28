@@ -27,7 +27,7 @@ class Page(object):
 			self.render()
 
 	def load(self):
-		with open(self.path) as f:
+		with open(self.path, 'rU') as f:
 			self.content = f.read().decode('utf-8')
 
 	def render(self):
