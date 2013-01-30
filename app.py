@@ -276,7 +276,7 @@ class User(object):
 
 	def check_password(self, password):
 		if app.config.get('HASHED_PASSWORDS'):
-			result = check_password(password, self.get('hash'))
+			result = check_hashed_password(password, self.get('hash'))
 		else:
 			result = (self.get('password') == password)
 		return result
@@ -292,7 +292,7 @@ def make_salted_hash(password, salt = None):
 	return binascii.hexlify(salt) + d.hexdigest()
 
 
-def check_password(password, salted_hash):
+def check_hashed_password(password, salted_hash):
 	salt = binascii.unhexlify(salted_hash[:128])
 	return make_salted_hash(password, salt) == salted_hash
 
