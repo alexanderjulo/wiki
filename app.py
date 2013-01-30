@@ -215,11 +215,14 @@ class UserManager(object):
 		if users.get(name):
 			return False
 		users[name] = {
-		    'hash': make_salted_hash(password),
 			'active': active,
 			'roles': roles,
 			'authenticated': False
 		}
+		if app.config.get('HASHED_PASSWORDS'):
+			users[name]['hash'] = make_salted_hash(password)
+		else:
+			users[name]['password'] = password
 		self.write(users)
 		userdata = users.get(name)
 		return User(self, name, userdata)
@@ -272,7 +275,11 @@ class User(object):
 		return self.name
 
 	def check_password(self, password):
-		return check_password(password, self.get('hash'))
+		if app.config.get('HASHED_PASSWORDS'):
+			result = check_password(password, self.get('hash'))
+		else:
+			result = (self.get('password') == password)
+		return result
 
 
 def make_salted_hash(password, salt = None):
