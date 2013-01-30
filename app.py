@@ -285,12 +285,9 @@ def make_salted_hash(password, salt = None):
 	return binascii.hexlify(salt) + d.hexdigest()
 
 
-def extract_salt(salted_hash):
-	return binascii.unhexlify(salted_hash[:128])
-
-
 def check_password(password, salted_hash):
-	return make_salted_hash(password, extract_salt(salted_hash)) == salted_hash
+	salt = binascii.unhexlify(salted_hash[:128])
+	return make_salted_hash(password, salt) == salted_hash
 
 
 def protect(f):
