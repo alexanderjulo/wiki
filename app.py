@@ -210,19 +210,31 @@ class UserManager(object):
 		with open(self.file, 'w') as f:
 			f.write(json.dumps(data, indent=2))
 
-	def add_user(self, name, password, active=True, roles=[]):
+	def add_user(self, name, password,
+			active=True, roles=[], authentication_method=None):
 		users = self.read()
 		if users.get(name):
 			return False
-		users[name] = {
+		if authentication_method is None:
+			authentication_method = app.config.get(
+				'DEFAULT_AUTHENTICATION_METHOD', 'cleartext'
+			)
+		new_user = {
 			'active': active,
 			'roles': roles,
+			'authentication_method': authentication_method,
 			'authenticated': False
 		}
-		if app.config.get('HASHED_PASSWORDS'):
-			users[name]['hash'] = make_salted_hash(password)
+		# Currently we have only two authentication_methods: cleartext and
+		# hash. If we get more authentication_methods, we will need to go to a
+		# strategy object pattern that operates on User.data.
+		if authentication_method == 'hash':
+			new_user['hash'] = make_salted_hash(password)
+		elif authentication_method == 'cleartext':
+			new_user['password'] = password
 		else:
-			users[name]['password'] = password
+			raise NotImplementedError(authentication_method)
+		users[name] = new_user
 		self.write(users)
 		userdata = users.get(name)
 		return User(self, name, userdata)
@@ -275,10 +287,16 @@ class User(object):
 		return self.name
 
 	def check_password(self, password):
-		if app.config.get('HASHED_PASSWORDS'):
+		"""Return True, return False, or raise NotImplementedError if the
+		authentication_method is missing or unknown."""
+		authentication_method = self.data.get('authentication_method', None)
+		# See comment in UserManager.add_user about authentication_method.
+		if authentication_method == 'hash':
 			result = check_hashed_password(password, self.get('hash'))
-		else:
+		elif authentication_method == 'cleartext':
 			result = (self.get('password') == password)
+		else:
+			raise NotImplementedError(authentication_method)
 		return result
 
 
