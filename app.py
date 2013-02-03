@@ -288,6 +288,8 @@ class User(object):
 		"""Return True, return False, or raise NotImplementedError if the
 		authentication_method is missing or unknown."""
 		authentication_method = self.data.get('authentication_method', None)
+		if authentication_method is None:
+			authentication_method = get_default_authentication_method()
 		# See comment in UserManager.add_user about authentication_method.
 		if authentication_method == 'hash':
 			result = check_hashed_password(password, self.get('hash'))
