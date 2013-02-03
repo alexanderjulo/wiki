@@ -216,9 +216,7 @@ class UserManager(object):
 		if users.get(name):
 			return False
 		if authentication_method is None:
-			authentication_method = app.config.get(
-				'DEFAULT_AUTHENTICATION_METHOD', 'cleartext'
-			)
+			authentication_method = get_default_authentication_method()
 		new_user = {
 			'active': active,
 			'roles': roles,
@@ -298,6 +296,10 @@ class User(object):
 		else:
 			raise NotImplementedError(authentication_method)
 		return result
+
+
+def get_default_authentication_method():
+	return app.config.get('DEFAULT_AUTHENTICATION_METHOD', 'cleartext')
 
 
 def make_salted_hash(password, salt = None):
