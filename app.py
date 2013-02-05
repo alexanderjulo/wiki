@@ -25,7 +25,7 @@ def convertMarkdown(content):
 	# and adds meta
 	md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
 	html = md.convert(content)
-	body = content.split('\n\n')[1]
+	body = content.split('\n\n', 1)[1]
 	meta = md.Meta
 	return html, body, meta
 
