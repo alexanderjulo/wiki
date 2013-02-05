@@ -19,6 +19,17 @@ login_user, logout_user
 	~~~~~~~~~~~~
 """
 
+
+def convertMarkdown(content):
+	# Processes Markdown text to HTML, returns original markdown text,
+	# and adds meta
+	md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
+	html = md.convert(content)
+	body = content.split('\n\n')[1]
+	meta = md.Meta
+	return html, body, meta
+
+
 class Page(object):
 	def __init__(self, path, url, new=False):
 		self.path = path
@@ -33,10 +44,7 @@ class Page(object):
 			self.content = f.read().decode('utf-8')
 
 	def render(self):
-		md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
-		self._html = md.convert(self.content)
-		self.body = self.content.split('\n\n')[1]
-		self._meta = md.Meta
+		self._html, self.body, self._meta = convertMarkdown(self.content)
 
 	def save(self, update=True):
 		folder = '/'.join(os.path.join(self.path).split('/')[:-1])
@@ -451,6 +459,14 @@ def edit(url):
 		flash('"%s" was saved.' % page.title, 'success')
 		return redirect(url_for('display', url=url))
 	return render_template('editor.html', form=form, page=page)
+
+@app.route('/preview/', methods=['POST'])
+@protect
+def preview():
+	a = request.form
+	data = {}
+	data['html'], data['body'], data['meta'] = convertMarkdown(a['body'])
+	return data['html']
 
 @app.route('/delete/<path:url>/')
 @protect

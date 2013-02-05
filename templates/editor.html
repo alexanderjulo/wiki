@@ -5,18 +5,30 @@ Wiki Editor
 {%- endblock title %}
 
 {% block content %}
-<form method="post" class="form">
-	{{ form.hidden_tag() }}
-	{{ input(form.title, placeholder="Title", class="span7") }}
-	{{ input(form.body, placeholder="Markdown", class="span7", rows="20") }}
-	{{ input(form.tags, placeholder="Tags (comma separated)", class="span7") }}
-	<div class="form-actions">
-		<div class="pull-right">
-			<button class="btn" type="submit">Preview</button>
-			<button class="btn btn-success" type="submit">Save</button>
-		</div>
+<ul class="nav nav-tabs">
+	<li class="active"><a href="#editor" data-toggle="tab">Editor</a></li>
+	<li><a href="#preview" data-toggle="tab" id="previewlink">Preview</a></li>
+</ul>
+<div class="tab-content">
+	<div class="tab-pane active" id="editor">
+		<form method="post" class="form">
+			{{ form.hidden_tag() }}
+			{{ input(form.title, placeholder="Title", class="span7") }}
+			{{ input(form.body, placeholder="Markdown", class="span7", rows="20") }}
+			{{ input(form.tags, placeholder="Tags (comma separated)", class="span7") }}
+			<div class="form-actions">
+        <div class="pull-left">
+          <a class="btn" href="#preview" id="previewbtn">Preview</a>
+        </div>
+				<div class="pull-right">
+          <a class="btn" href="{{ url_for('display', url=page.url) }}">Cancel</a>
+					<button class="btn btn-success" type="submit">Save</button>
+				</div>
+			</div>
+		</form>
 	</div>
-</form>
+	<div class="tab-pane" id="preview"></div>
+</div>
 {% endblock content %}
 
 {% block sidebar %}
@@ -42,3 +54,35 @@ Turns into:
 <p></p>
 
 {% endblock sidebar %}
+
+{% block postscripts -%}
+{{ super() }}
+$('#previewlink').on('click', function() {
+	var $form = $('.form');
+  var $inputs = $form.find('input, textarea, button');
+  var $pre = $('#preview');
+  var bodycontent = 'title: preview\n\n' + $form.find('textarea').val();
+  $inputs.prop('disabled', true);
+  $pre.removeClass('alert').removeClass('alert-error').html("Loading...");
+  $.ajax({
+    url: "/preview/",
+    type: "POST",
+    data: { body: bodycontent },
+    success: function(msg) {
+      $pre.html(msg);
+      console.log(msg);
+    },
+    error: function() {
+			$pre.addClass('alert').addClass('alert-error');
+      $pre.html('There was a problem with the preview.');
+    },
+    complete: function() {
+      $inputs.prop('disabled', false);
+    }
+  });
+});
+$('#previewbtn').on('click', function(event) {
+	event.preventDefault();
+	$('#previewlink').click();
+});
+{%- endblock postscripts %}
