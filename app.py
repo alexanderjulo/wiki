@@ -37,11 +37,7 @@ class Page(object):
 		self._meta = md.Meta
 
 	def save(self, update=True):
-		pathStyle = '/'
-		if os.name == 'nt':
-			pathStyle = '\\'
-			self.path = self.path.replace('/', pathStyle)
-		folder = pathStyle.join(os.path.join(self.path).split(pathStyle)[:-1])
+		folder = os.path.dirname(self.path)
 		if not os.path.exists(folder):
 			os.makedirs(folder)
 		with open(self.path, 'w') as f:
@@ -140,8 +136,8 @@ class Wiki(object):
 						url = os.path.join(path_prefix[0], name[:-3])
 					if attr:
 						pages[getattr(page, attr)] = page
-					else: 
-						pages.append(Page(fullname, url))
+					else:
+						pages.append(Page(fullname, url.replace('\\', '/')))
 		if attr:
 			pages = {}
 		else:
