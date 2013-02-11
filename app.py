@@ -47,7 +47,7 @@ class Page(object):
 		self._html, self.body, self._meta = convertMarkdown(self.content)
 
 	def save(self, update=True):
-		folder = '/'.join(os.path.join(self.path).split('/')[:-1])
+		folder = os.path.dirname(self.path)
 		if not os.path.exists(folder):
 			os.makedirs(folder)
 		with open(self.path, 'w') as f:
@@ -146,8 +146,8 @@ class Wiki(object):
 						url = os.path.join(path_prefix[0], name[:-3])
 					if attr:
 						pages[getattr(page, attr)] = page
-					else: 
-						pages.append(Page(fullname, url))
+					else:
+						pages.append(Page(fullname, url.replace('\\', '/')))
 		if attr:
 			pages = {}
 		else:
@@ -355,6 +355,8 @@ class CreateForm(Form):
 		pageStub = re.sub('[ ]{2,}', ' ', url).strip()
 		# Changes spaces to underscores and make everything lowercase
 		pageStub = pageStub.lower().replace(' ', '_')
+		# Corrects Windows style folders
+		pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
 		return pageStub
 
 class SearchForm(Form):
