@@ -13,7 +13,6 @@ from flask.ext.login import LoginManager, login_required, current_user, \
 login_user, logout_user
 
 
-
 """
 	Wiki classes
 	~~~~~~~~~~~~
@@ -52,7 +51,8 @@ class Page(object):
 			os.makedirs(folder)
 		with open(self.path, 'w') as f:
 			for key, value in self._meta.items():
-				f.write('%s: %s\n'.encode('utf-8') % (key, value))
+				line = u'%s: %s\n' % (key, value)
+				f.write(line.encode('utf-8'))
 			f.write('\n'.encode('utf-8'))
 			f.write(self.body.encode('utf-8'))
 		if update:
