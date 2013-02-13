@@ -11,6 +11,7 @@ from flask.ext.wtf import (Form, TextField, TextAreaField, PasswordField,
                            Required, ValidationError)
 from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
+from flask.ext.script import Manager
 
 
 """
@@ -407,10 +408,8 @@ except IOError:
         + "config.py in your content directory."
     )
 
-from flask.ext.script import Manager
 manager = Manager(app)
 
-from flask.ext.login import LoginManager
 loginmanager = LoginManager()
 loginmanager.init_app(app)
 loginmanager.login_view = 'user_login'
