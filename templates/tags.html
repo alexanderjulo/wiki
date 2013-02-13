@@ -12,10 +12,10 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for tag in tags %}
+			{% for tag, pages in tags|dictsort %}
 				<tr>
 					<td><a href="{{ url_for('tag', name=tag) }}">{{ tag }}</a></td>
-					<td>{{ tags[tag]|length }}</td>
+					<td>{{ pages|length }}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
