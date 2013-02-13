@@ -403,10 +403,8 @@ try:
         os.path.join(app.config.get('CONTENT_DIR'), 'config.py')
     )
 except IOError:
-    print (
-        "Startup Failure: You need to place a "
-        + "config.py in your content directory."
-    )
+    print ("Startup Failure: You need to place a "
+           "config.py in your content directory.")
 
 manager = Manager(app)
 
