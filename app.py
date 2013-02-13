@@ -5,12 +5,12 @@ import re
 import markdown
 import json
 from functools import wraps
-from flask import Flask, render_template, flash, redirect, url_for, request, \
-abort
-from flask.ext.wtf import Form, TextField, TextAreaField, PasswordField, \
-Required, ValidationError
-from flask.ext.login import LoginManager, login_required, current_user, \
-login_user, logout_user
+from flask import (Flask, render_template, flash, redirect, url_for, request,
+                   abort)
+from flask.ext.wtf import (Form, TextField, TextAreaField, PasswordField,
+                           Required, ValidationError)
+from flask.ext.login import (LoginManager, login_required, current_user,
+                             login_user, logout_user)
 
 
 """
