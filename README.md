@@ -57,3 +57,6 @@ If you want to change the overall design, you should edit `templates/base.html`
 and/or `static/bootstrap.css`. If you do not like specific parts of the site,
 it should be fairly easy to find the equivalent template and edit it.
 
+## Contributors
+
+Thank you very much to my two top contributers @walkerh and @traeblain. You two have posted so many issues and especially solved them with so many pull requests, that I sometimes lose track of it! :)
