@@ -221,7 +221,7 @@ class UserManager(object):
             f.write(json.dumps(data, indent=2))
 
     def add_user(self, name, password,
-            active=True, roles=[], authentication_method=None):
+                 active=True, roles=[], authentication_method=None):
         users = self.read()
         if users.get(name):
             return False
@@ -513,8 +513,8 @@ def search():
     form = SearchForm()
     if form.validate_on_submit():
         results = wiki.search(form.term.data)
-        return render_template('search.html', form=form, \
-            results=results, search=form.term.data)
+        return render_template('search.html', form=form,
+                               results=results, search=form.term.data)
     return render_template('search.html', form=form, search=None)
 
 
