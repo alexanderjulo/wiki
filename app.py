@@ -55,7 +55,7 @@ class Page(object):
                 line = u'%s: %s\n' % (key, value)
                 f.write(line.encode('utf-8'))
             f.write('\n'.encode('utf-8'))
-            f.write(self.body.encode('utf-8'))
+            f.write(self.body.replace('\r\n', os.linesep).encode('utf-8'))
         if update:
             self.load()
             self.render()
