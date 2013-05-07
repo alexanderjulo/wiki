@@ -21,6 +21,15 @@
 {% endblock content %}
 
 {% block sidebar %}
+{% if page.tags %}
+<h3>Tags</h3>
+  <ul>
+      {% for tag in page.tags.split(',') %}
+        <li><a href="{{ url_for('tag', name=tag.strip()) }}">{{ tag|trim }}</a></li>
+      {% endfor %}
+  </ul>
+{% endif %}
+<h3>Actions</h3>
 <ul class="nav nav-tabs nav-stacked">
 	<li><a href="{{ url_for('edit', url=page.url) }}">Edit</a></li>
   <li><a href="#confirmDelete" data-toggle="modal" class="text-error">Delete</a></li>
