@@ -127,6 +127,12 @@ class Wiki(object):
             return False
         return Page(path, url, new=True)
 
+    def move(self, url, newurl):
+        os.rename(
+            os.path.join(self.root, url) + '.md',
+            os.path.join(self.root, newurl) + '.md'
+        )
+
     def delete(self, url):
         path = self.path(url)
         if not self.exists(url):
@@ -345,7 +351,7 @@ def protect(f):
 """
 
 
-class CreateForm(Form):
+class URLForm(Form):
     url = TextField('', [Required()])
 
     def validate_url(form, field):
@@ -454,7 +460,7 @@ def display(url):
 @app.route('/create/', methods=['GET', 'POST'])
 @protect
 def create():
-    form = CreateForm()
+    form = URLForm()
     if form.validate_on_submit():
         return redirect(url_for('edit', url=form.clean_url(form.url.data)))
     return render_template('create.html', form=form)
@@ -482,6 +488,18 @@ def preview():
     data = {}
     data['html'], data['body'], data['meta'] = convertMarkdown(a['body'])
     return data['html']
+
+
+@app.route('/move/<path:url>/', methods=['GET', 'POST'])
+@protect
+def move(url):
+    page = wiki.get_or_404(url)
+    form = URLForm(obj=page)
+    if form.validate_on_submit():
+        newurl = form.url.data
+        wiki.move(url, newurl)
+        return redirect(url_for('.display', url=newurl))
+    return render_template('move.html', form=form, page=page)
 
 
 @app.route('/delete/<path:url>/')

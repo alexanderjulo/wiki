@@ -32,6 +32,7 @@
 <h3>Actions</h3>
 <ul class="nav nav-tabs nav-stacked">
 	<li><a href="{{ url_for('edit', url=page.url) }}">Edit</a></li>
+  <li><a href="{{ url_for('move', url=page.url) }}">Move</a></li>
   <li><a href="#confirmDelete" data-toggle="modal" class="text-error">Delete</a></li>
 </ul>
 {% endblock sidebar %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Move a page{% endblock title %}
+{% block content %}
+<form method="POST" class="form-inline">
+    {{ form.hidden_tag() }}
+    {{ input(form.url, placeholder="New URL of the page") }}
+    <input type="submit" class="btn btn-success" value="Create">
+</form>
+{% endblock content %}
+
+{% block sidebar %}
+<p class="alert alert-success">Be careful, the old url will be invalid immediately!</p>
+{% endblock sidebar %}
