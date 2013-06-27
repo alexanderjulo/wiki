@@ -3,6 +3,8 @@ import hashlib
 import os
 import re
 import markdown
+import docutils.core
+import docutils.io
 import json
 from functools import wraps
 from flask import (Flask, render_template, flash, redirect, url_for, request,
@@ -18,14 +20,78 @@ from flask.ext.script import Manager
     Wiki classes
     ~~~~~~~~~~~~
 """
+def rst2html(source, source_path=None, source_class=docutils.io.StringInput,
+             destination_path=None, reader=None, reader_name='standalone',
+             parser=None, parser_name='restructuredtext', writer=None,
+             writer_name='html', settings=None, settings_spec=None,
+             settings_overrides=None, config_section=None,
+             enable_exit_status=None):
+    """
+Set up & run a `Publisher`, and return a dictionary of document parts.
+Dictionary keys are the names of parts, and values are Unicode strings;
+encoding is up to the client. For programmatic use with string I/O.
+
+For encoded string input, be sure to set the 'input_encoding' setting to
+the desired encoding. Set it to 'unicode' for unencoded Unicode string
+input. Here's how::
+
+publish_parts(..., settings_overrides={'input_encoding': 'unicode'})
+
+Parameters: see `publish_programmatically`.
+"""
+    output, pub = docutils.core.publish_programmatically(
+        source=source, source_path=source_path, source_class=source_class,
+        destination_class=docutils.io.StringOutput,
+        destination=None, destination_path=destination_path,
+        reader=reader, reader_name=reader_name,
+        parser=parser, parser_name=parser_name,
+        writer=writer, writer_name=writer_name,
+        settings=settings, settings_spec=settings_spec,
+        settings_overrides=settings_overrides,
+        config_section=config_section,
+        enable_exit_status=enable_exit_status)
+    return (pub.writer.parts['fragment'], pub.document.reporter.max_level,
+            pub.settings.record_dependencies)
+
+def parse_meta(lines):
+        """ Parse Meta-Data. Taken from Python-Markdown"""
+        META_RE = re.compile(r'^\.\.\s(?P<key>.*?): (?P<value>.*)')
+        meta = {}
+        key = None
+        for line in lines:
+            if line.strip() == '':
+                continue
+            m1 = META_RE.match(line)
+            if m1:
+                key = m1.group('key').lower().strip()
+                value = m1.group('value').strip()
+                try:
+                    meta[key].append(value)
+                except KeyError:
+                    meta[key] = [value]
+        return meta
 
 
 def convertMarkdown(content):
+    html, _, deps = rst2html(content, settings_overrides={
+                        'initial_header_level': 2,
+                        'record_dependencies': True,
+                        'stylesheet_path': None,
+                        'link_stylesheet': True,
+                        'syntax_highlight': 'short',
+                })
+    meta_lines, body = content.split('\n\n', 1)
+    meta = parse_meta(meta_lines.split('\n'))
+    return html, body, meta
+
+
+def __convertMarkdown(content):
     # Processes Markdown text to HTML, returns original markdown text,
     # and adds meta
     md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
     html = md.convert(content)
-    body = content.split('\n\n', 1)[1]
+    meta_lines, body = content.split('\n\n', 1)
+
     meta = md.Meta
     return html, body, meta
 
@@ -52,7 +118,7 @@ class Page(object):
             os.makedirs(folder)
         with open(self.path, 'w') as f:
             for key, value in self._meta.items():
-                line = u'%s: %s\n' % (key, value)
+                line = u'.. %s: %s\n' % (key, value)
                 f.write(line.encode('utf-8'))
             f.write('\n'.encode('utf-8'))
             f.write(self.body.replace('\r\n', os.linesep).encode('utf-8'))
