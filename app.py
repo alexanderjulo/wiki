@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import binascii
 import hashlib
 import os
@@ -16,44 +17,83 @@ from flask.ext.login import (LoginManager, login_required, current_user,
 from flask.ext.script import Manager
 
 
+
 """
-    Wiki classes
-    ~~~~~~~~~~~~
+    Markup classes
+    ~~~~~~~~~~~~~~
 """
-def rst2html(source, source_path=None, source_class=docutils.io.StringInput,
-             destination_path=None, reader=None, reader_name='standalone',
-             parser=None, parser_name='restructuredtext', writer=None,
-             writer_name='html', settings=None, settings_spec=None,
-             settings_overrides=None, config_section=None,
-             enable_exit_status=None):
-    """
-Set up & run a `Publisher`, and return a dictionary of document parts.
-Dictionary keys are the names of parts, and values are Unicode strings;
-encoding is up to the client. For programmatic use with string I/O.
 
-For encoded string input, be sure to set the 'input_encoding' setting to
-the desired encoding. Set it to 'unicode' for unencoded Unicode string
-input. Here's how::
+class Markup(object):
+    """ Base markup class"""
 
-publish_parts(..., settings_overrides={'input_encoding': 'unicode'})
+    def __init__(self, raw_content):
+        self.raw_content = raw_content
 
-Parameters: see `publish_programmatically`.
-"""
-    output, pub = docutils.core.publish_programmatically(
-        source=source, source_path=source_path, source_class=source_class,
-        destination_class=docutils.io.StringOutput,
-        destination=None, destination_path=destination_path,
-        reader=reader, reader_name=reader_name,
-        parser=parser, parser_name=parser_name,
-        writer=writer, writer_name=writer_name,
-        settings=settings, settings_spec=settings_spec,
-        settings_overrides=settings_overrides,
-        config_section=config_section,
-        enable_exit_status=enable_exit_status)
-    return (pub.writer.parts['fragment'], pub.document.reporter.max_level,
-            pub.settings.record_dependencies)
+    def process(self):
+        """
+        return (html, body, meta) where HTML is the rendered output
+        body is the the editable content (text), and meta is
+        a dictionary with at least ['title', 'tags'] keys
+        """
+        raise NotImplementedError("override in a subclass")
 
-def parse_meta(lines):
+
+class Markdown(Markup):
+    NAME = 'markdown'
+    META_LINE = '%s: %s\n'
+    EXTENSION = '.md'
+
+    def process(self):
+        # Processes Markdown text to HTML, returns original markdown text,
+        # and adds meta
+        md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
+        html = md.convert(self.raw_content)
+        meta_lines, body = self.raw_content.split('\n\n', 1)
+        meta = md.Meta
+        return html, body, meta
+
+
+class RestructuredText(Markup):
+    NAME = 'restructuredtext'
+    META_LINE = '.. %s: %s\n'
+    EXTENSION = '.rst'
+
+    def process(self):
+        settings = {'initial_header_level': 2,
+                    'record_dependencies': True,
+                    'stylesheet_path': None,
+                    'link_stylesheet': True,
+                    'syntax_highlight': 'short',
+                    }
+        html, _, deps = self._rst2html(self.raw_content, settings_overrides=settings)
+        meta_lines, body = self.raw_content.split('\n\n', 1)
+        meta = self._parse_meta(meta_lines.split('\n'))
+        return html, body, meta
+
+    def _rst2html(self, source, source_path=None, source_class=docutils.io.StringInput,
+                  destination_path=None, reader=None, reader_name='standalone',
+                  parser=None, parser_name='restructuredtext', writer=None,
+                  writer_name='html', settings=None, settings_spec=None,
+                  settings_overrides=None, config_section=None,
+                  enable_exit_status=None):
+        # Taken from Nikola
+        # http://bit.ly/14CmQyh
+        output, pub = docutils.core.publish_programmatically(
+            source=source, source_path=source_path, source_class=source_class,
+            destination_class=docutils.io.StringOutput,
+            destination=None, destination_path=destination_path,
+            reader=reader, reader_name=reader_name,
+            parser=parser, parser_name=parser_name,
+            writer=writer, writer_name=writer_name,
+            settings=settings, settings_spec=settings_spec,
+            settings_overrides=settings_overrides,
+            config_section=config_section,
+            enable_exit_status=enable_exit_status)
+        return (pub.writer.parts['fragment'], pub.document.reporter.max_level,
+                pub.settings.record_dependencies)
+
+
+    def _parse_meta(self, lines):
         """ Parse Meta-Data. Taken from Python-Markdown"""
         META_RE = re.compile(r'^\.\.\s(?P<key>.*?): (?P<value>.*)')
         meta = {}
@@ -72,34 +112,16 @@ def parse_meta(lines):
         return meta
 
 
-def convertMarkdown(content):
-    html, _, deps = rst2html(content, settings_overrides={
-                        'initial_header_level': 2,
-                        'record_dependencies': True,
-                        'stylesheet_path': None,
-                        'link_stylesheet': True,
-                        'syntax_highlight': 'short',
-                })
-    meta_lines, body = content.split('\n\n', 1)
-    meta = parse_meta(meta_lines.split('\n'))
-    return html, body, meta
 
-
-def __convertMarkdown(content):
-    # Processes Markdown text to HTML, returns original markdown text,
-    # and adds meta
-    md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
-    html = md.convert(content)
-    meta_lines, body = content.split('\n\n', 1)
-
-    meta = md.Meta
-    return html, body, meta
-
-
+"""
+    Wiki classes
+    ~~~~~~~~~~~~
+"""
 class Page(object):
-    def __init__(self, path, url, new=False):
+    def __init__(self, path, url, new=False, markup=Markdown):
         self.path = path
         self.url = url
+        self.markup = markup
         self._meta = {}
         if not new:
             self.load()
@@ -107,10 +129,10 @@ class Page(object):
 
     def load(self):
         with open(self.path, 'rU') as f:
-            self.content = f.read().decode('utf-8')
+            self.content = self.markup(f.read().decode('utf-8'))
 
     def render(self):
-        self._html, self.body, self._meta = convertMarkdown(self.content)
+        self._html, self.body, self._meta = self.content.process()
 
     def save(self, update=True):
         folder = os.path.dirname(self.path)
@@ -118,7 +140,7 @@ class Page(object):
             os.makedirs(folder)
         with open(self.path, 'w') as f:
             for key, value in self._meta.items():
-                line = u'.. %s: %s\n' % (key, value)
+                line = self.markup.META_LINE % (key, value)
                 f.write(line.encode('utf-8'))
             f.write('\n'.encode('utf-8'))
             f.write(self.body.replace('\r\n', os.linesep).encode('utf-8'))
@@ -151,7 +173,7 @@ class Page(object):
     def title(self):
         return self['title']
 
-    @title.setter
+    @title.setter               # NOQA
     def title(self, value):
         self['title'] = value
 
@@ -159,26 +181,27 @@ class Page(object):
     def tags(self):
         return self['tags']
 
-    @tags.setter
+    @tags.setter               # NOQA
     def tags(self, value):
         self['tags'] = value
 
 
 class Wiki(object):
-    def __init__(self, root):
+    def __init__(self, root, markup=Markdown):
         self.root = root
+        self.markup = markup
 
     def path(self, url):
-        return os.path.join(self.root, url + '.md')
+        return os.path.join(self.root, url + self.markup.EXTENSION)
 
     def exists(self, url):
         path = self.path(url)
         return os.path.exists(path)
 
     def get(self, url):
-        path = os.path.join(self.root, url + '.md')
+        path = os.path.join(self.root, url + self.markup.EXTENSION)
         if self.exists(url):
-            return Page(path, url)
+            return Page(path, url, markup=self.markup)
         return None
 
     def get_or_404(self, url):
@@ -191,12 +214,12 @@ class Wiki(object):
         path = self.path(url)
         if self.exists(url):
             return False
-        return Page(path, url, new=True)
+        return Page(path, url, new=True, markup=self.markup)
 
     def move(self, url, newurl):
         os.rename(
-            os.path.join(self.root, url) + '.md',
-            os.path.join(self.root, newurl) + '.md'
+            os.path.join(self.root, url) + self.markup.EXTENSION,
+            os.path.join(self.root, newurl) + self.markup.EXTENSION
         )
 
     def delete(self, url):
@@ -213,7 +236,7 @@ class Wiki(object):
                 fullname = os.path.join(directory, name)
                 if os.path.isdir(fullname):
                     _walk(fullname, path_prefix + (name,))
-                elif name.endswith('.md'):
+                elif name.endswith(self.markup.EXTENSION):
                     if not path_prefix:
                         url = name[:-3]
                     else:
@@ -470,6 +493,7 @@ class LoginForm(Form):
 app = Flask(__name__)
 app.config['CONTENT_DIR'] = 'content'
 app.config['TITLE'] = 'wiki'
+app.config['MARKUP'] = 'markdown'  # or 'restructucturedtext'
 try:
     app.config.from_pyfile(
         os.path.join(app.config.get('CONTENT_DIR'), 'config.py')
@@ -483,8 +507,10 @@ manager = Manager(app)
 loginmanager = LoginManager()
 loginmanager.init_app(app)
 loginmanager.login_view = 'user_login'
+markup = dict([(klass.NAME, klass) for klass in
+               Markup.__subclasses__()])[app.config.get('MARKUP')]
 
-wiki = Wiki(app.config.get('CONTENT_DIR'))
+wiki = Wiki(app.config.get('CONTENT_DIR'), markup)
 
 users = UserManager(app.config.get('CONTENT_DIR'))
 
@@ -552,7 +578,7 @@ def edit(url):
 def preview():
     a = request.form
     data = {}
-    data['html'], data['body'], data['meta'] = convertMarkdown(a['body'])
+    data['html'], data['body'], data['meta'] = markup(a['body']).process()
     return data['html']
 
 
