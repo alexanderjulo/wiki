@@ -3,6 +3,7 @@ import binascii
 import hashlib
 import os
 import re
+import textwrap
 import markdown
 import docutils.core
 import docutils.io
@@ -17,14 +18,17 @@ from flask.ext.login import (LoginManager, login_required, current_user,
 from flask.ext.script import Manager
 
 
-
 """
     Markup classes
     ~~~~~~~~~~~~~~
 """
 
 class Markup(object):
-    """ Base markup class"""
+    """ Base markup class."""
+    NAME = 'Text'
+    META_LINE = '%s: %s\n'
+    EXTENSION = '.txt'
+    HOWTO = """ """
 
     def __init__(self, raw_content):
         self.raw_content = raw_content
@@ -37,11 +41,43 @@ class Markup(object):
         """
         raise NotImplementedError("override in a subclass")
 
+    @classmethod
+    def howto(cls):
+        return cls(textwrap.dedent(cls.HOWTO)).process()[0]
+
 
 class Markdown(Markup):
     NAME = 'markdown'
     META_LINE = '%s: %s\n'
     EXTENSION = '.md'
+    HOWTO = """
+        This editor is [markdown][] featured.
+
+            * I am
+            * a
+            * list
+
+        Turns into:
+
+        * I am
+        * a
+        * list
+
+        `**bold** and *italics*` turn into **bold** and *italics*. Very easy!
+
+        Create links with `[Wiki](http://github.com/alexex/wiki)`. They turn into
+        [Wiki][].
+
+        Headers are as follows:
+
+            # Level 1
+            ## Level 2
+            ### Level 3
+
+        [markdown]: http://daringfireball.net/projects/markdown/
+        [Wiki]: http://github.com/alexex/wiki
+        """
+
 
     def process(self):
         # Processes Markdown text to HTML, returns original markdown text,
@@ -57,6 +93,37 @@ class RestructuredText(Markup):
     NAME = 'restructuredtext'
     META_LINE = '.. %s: %s\n'
     EXTENSION = '.rst'
+    HOWTO = """
+        This editor is `reStructuredText`_ featured::
+
+            * I am
+            * a
+            * list
+
+        Turns into:
+
+        *  I am
+        *  a
+        *  list
+
+        ``**bold** and *italics*`` turn into **bold** and *italics*. Very easy!
+
+        Create links with ```Wiki <http://github.com/alexex/wiki>`_``. They turn into
+        `Wiki <https://github.com/alexex/wiki>`_.
+
+        Headers are just any underline (and, optionally, overline). For example::
+
+            Level 1
+            *******
+
+            Level 2
+            -------
+
+            Level 3
+            +++++++
+
+        .. _reStructuredText: http://docutils.sourceforge.net/rst.html
+        """
 
     def process(self):
         settings = {'initial_header_level': 2,
@@ -491,6 +558,7 @@ class LoginForm(Form):
 """
 
 app = Flask(__name__)
+app.debug = True
 app.config['CONTENT_DIR'] = 'content'
 app.config['TITLE'] = 'wiki'
 app.config['MARKUP'] = 'markdown'  # or 'restructucturedtext'
@@ -509,7 +577,6 @@ loginmanager.init_app(app)
 loginmanager.login_view = 'user_login'
 markup = dict([(klass.NAME, klass) for klass in
                Markup.__subclasses__()])[app.config.get('MARKUP')]
-
 wiki = Wiki(app.config.get('CONTENT_DIR'), markup)
 
 users = UserManager(app.config.get('CONTENT_DIR'))
@@ -570,7 +637,8 @@ def edit(url):
         page.save()
         flash('"%s" was saved.' % page.title, 'success')
         return redirect(url_for('display', url=url))
-    return render_template('editor.html', form=form, page=page)
+    return render_template('editor.html', form=form, page=page,
+                           markup=markup)
 
 
 @app.route('/preview/', methods=['POST'])
