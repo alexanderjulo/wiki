@@ -12,7 +12,7 @@ from flask.ext.wtf import (Form, TextField, TextAreaField, PasswordField,
 from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
 from flask.ext.script import Manager
-
+from signals import page_saved
 
 """
     Wiki classes
@@ -377,6 +377,7 @@ class EditorForm(Form):
     title = TextField('', [Required()])
     body = TextAreaField('', [Required()])
     tags = TextField('')
+    message = TextField('')
 
 
 class LoginForm(Form):
@@ -396,12 +397,25 @@ class LoginForm(Form):
             raise ValidationError('Username and password do not match.')
 
 
+class SignupForm(LoginForm):
+
+    def validate_name(form, field):
+        user = users.get_user(field.data)
+        if user:
+           raise ValidationError('This username is already taken')
+
+    def validate_password(form, field):
+        if len(field.data) < 4:
+            raise ValidationError('The password is too short')
+
+
 """
     Application Setup
     ~~~~~~~~~
 """
 
 app = Flask(__name__)
+app.debug = True
 app.config['CONTENT_DIR'] = 'content'
 app.config['TITLE'] = 'wiki'
 try:
@@ -421,6 +435,10 @@ loginmanager.login_view = 'user_login'
 wiki = Wiki(app.config.get('CONTENT_DIR'))
 
 users = UserManager(app.config.get('CONTENT_DIR'))
+
+if app.config.get('USE_GIT', False):
+    from extensions._git import git_plugin
+    page_saved.connect(git_plugin)
 
 
 @loginmanager.user_loader
@@ -476,6 +494,7 @@ def edit(url):
             page = wiki.get_bare(url)
         form.populate_obj(page)
         page.save()
+        page_saved.send(page, message=form.message.data.encode('utf-8'))
         flash('"%s" was saved.' % page.title, 'success')
         return redirect(url_for('display', url=url))
     return render_template('editor.html', form=form, page=page)
@@ -562,9 +581,14 @@ def user_index():
     pass
 
 
-@app.route('/user/create/')
-def user_create():
-    pass
+@app.route('/user/signup/', methods=['GET', 'POST'])
+def user_signup():
+    form = SignupForm()
+    if form.validate_on_submit():
+        users.add_user(form.name.data, form.password.data)
+        flash('You were registered successfully. Please login now.', 'success')
+        return redirect(request.args.get("next") or url_for('index'))
+    return render_template('login.html', form=form)
 
 
 @app.route('/user/<int:user_id>/')
@@ -575,7 +599,6 @@ def user_admin(user_id):
 @app.route('/user/delete/<int:user_id>/')
 def user_delete(user_id):
     pass
-
 
 if __name__ == '__main__':
     manager.run()
