@@ -7,19 +7,18 @@ import json
 from functools import wraps
 from flask import (Flask, render_template, flash, redirect, url_for, request,
                    abort)
-from flask.ext.cache import Cache
 from flask.ext.wtf import (Form, TextField, TextAreaField, PasswordField,
                            Required, ValidationError)
 from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
 from flask.ext.script import Manager
 
+from exts import cache
 
 """
     Wiki classes
     ~~~~~~~~~~~~
 """
-
 
 def convertMarkdown(content):
     # Processes Markdown text to HTML, returns original markdown text,
@@ -46,6 +45,9 @@ class Page(object):
 
     def render(self):
         self._html, self.body, self._meta = convertMarkdown(self.content)
+
+    def __repr__(self):
+        return "%s(%s)" % (self.__class__.__name__, self.path)
 
     def save(self, update=True):
         folder = os.path.dirname(self.path)
@@ -79,8 +81,12 @@ class Page(object):
     def html(self):
         return self._html
 
+    @cache.memoize()
     def __html__(self):
         return self.html
+
+    def delete_cache(self):
+        cache.delete(self.__html__.make_cache_key(self.__html__.uncached, self))
 
     @property
     def title(self):
@@ -403,7 +409,6 @@ class LoginForm(Form):
 """
 
 app = Flask(__name__)
-app.debug = True
 app.config['CONTENT_DIR'] = 'content'
 app.config['TITLE'] = 'wiki'
 try:
@@ -413,10 +418,8 @@ try:
 except IOError:
     print ("Startup Failure: You need to place a "
            "config.py in your content directory.")
-
 CACHE_DIR = os.path.join(app.config.get('CONTENT_DIR'), 'cache')
-cache = Cache(config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': CACHE_DIR})
-cache.init_app(app)
+cache.init_app(app, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': CACHE_DIR})
 manager = Manager(app)
 
 loginmanager = LoginManager()
@@ -456,7 +459,6 @@ def index():
 
 @app.route('/<path:url>/')
 @protect
-@cache.cached()
 def display(url):
     page = wiki.get_or_404(url)
     return render_template('page.html', page=page)
@@ -481,8 +483,7 @@ def edit(url):
             page = wiki.get_bare(url)
         form.populate_obj(page)
         page.save()
-        # delete page cache
-        cache.delete('view/%s' % request.path.split('/edit')[1])
+        page.delete_cache()
         flash('"%s" was saved.' % page.title, 'success-once')
         return redirect(url_for('display', url=url))
     return render_template('editor.html', form=form, page=page)
