@@ -7,6 +7,7 @@ import json
 from functools import wraps
 from flask import (Flask, render_template, flash, redirect, url_for, request,
                    abort)
+from flask.ext.cache import Cache
 from flask.ext.wtf import (Form, TextField, TextAreaField, PasswordField,
                            Required, ValidationError)
 from flask.ext.login import (LoginManager, login_required, current_user,
@@ -402,6 +403,7 @@ class LoginForm(Form):
 """
 
 app = Flask(__name__)
+app.debug = True
 app.config['CONTENT_DIR'] = 'content'
 app.config['TITLE'] = 'wiki'
 try:
@@ -412,6 +414,9 @@ except IOError:
     print ("Startup Failure: You need to place a "
            "config.py in your content directory.")
 
+CACHE_DIR = os.path.join(app.config.get('CONTENT_DIR'), 'cache')
+cache = Cache(config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': CACHE_DIR})
+cache.init_app(app)
 manager = Manager(app)
 
 loginmanager = LoginManager()
@@ -433,7 +438,6 @@ def load_user(name):
     ~~~~~~
 """
 
-
 @app.route('/')
 @protect
 def home():
@@ -452,6 +456,7 @@ def index():
 
 @app.route('/<path:url>/')
 @protect
+@cache.cached()
 def display(url):
     page = wiki.get_or_404(url)
     return render_template('page.html', page=page)
@@ -476,7 +481,9 @@ def edit(url):
             page = wiki.get_bare(url)
         form.populate_obj(page)
         page.save()
-        flash('"%s" was saved.' % page.title, 'success')
+        # delete page cache
+        cache.delete('view/%s' % request.path.split('/edit')[1])
+        flash('"%s" was saved.' % page.title, 'success-once')
         return redirect(url_for('display', url=url))
     return render_template('editor.html', form=form, page=page)
 
