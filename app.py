@@ -9,6 +9,7 @@ from flask import (Flask, render_template, flash, redirect, url_for, request,
                    abort)
 from flask.ext.wtf import (Form, TextField, TextAreaField, PasswordField,
                            Required, ValidationError)
+from flask.ext.wtf.html5 import EmailField
 from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
 from flask.ext.script import Manager
@@ -226,7 +227,7 @@ class UserManager(object):
         with open(self.file, 'w') as f:
             f.write(json.dumps(data, indent=2))
 
-    def add_user(self, name, password,
+    def add_user(self, name, password, full_name, email,
                  active=True, roles=[], authentication_method=None):
         users = self.read()
         if users.get(name):
@@ -237,7 +238,9 @@ class UserManager(object):
             'active': active,
             'roles': roles,
             'authentication_method': authentication_method,
-            'authenticated': False
+            'authenticated': False,
+            'full_name': full_name,
+            'email': email
         }
         # Currently we have only two authentication_methods: cleartext and
         # hash. If we get more authentication_methods, we will need to go to a
@@ -381,7 +384,7 @@ class EditorForm(Form):
 
 
 class LoginForm(Form):
-    name = TextField('Name', [Required()])
+    name = TextField('Username', [Required()])
     password = PasswordField('Password', [Required()])
 
     def validate_name(form, field):
@@ -397,7 +400,11 @@ class LoginForm(Form):
             raise ValidationError('Username and password do not match.')
 
 
-class SignupForm(LoginForm):
+class SignupForm(Form):
+    name = TextField('Username', [Required()])
+    email = EmailField('Email', [Required()])
+    full_name = TextField('Full name')
+    password = PasswordField('Password', [Required()])
 
     def validate_name(form, field):
         user = users.get_user(field.data)
@@ -585,10 +592,11 @@ def user_index():
 def user_signup():
     form = SignupForm()
     if form.validate_on_submit():
-        users.add_user(form.name.data, form.password.data)
+        users.add_user(form.name.data, form.password.data,
+                       form.full_name.data, form.email.data)
         flash('You were registered successfully. Please login now.', 'success')
         return redirect(request.args.get("next") or url_for('index'))
-    return render_template('login.html', form=form)
+    return render_template('signup.html', form=form)
 
 
 @app.route('/user/<int:user_id>/')

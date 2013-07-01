@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Sign up{% endblock title %}
+
+{% block content %}
+
+<form class="form form-horizontal" method="POST">
+	{{ form.hidden_tag() }}
+	{{ input(form.name) }}
+	{{ input(form.full_name) }}
+
+    {{ input(form.email) }}
+
+    {{ input(form.password) }}
+    <div class="form-actions">
+
+    <button type="submit" class="btn btn-warning" >Create my account</button>
+    Already have an account? <a href="{{ url_for('user_login') }}">Log in</a>
+
+    </div>
+
+</form>
+
+
+{% endblock content %}
