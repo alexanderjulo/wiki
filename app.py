@@ -304,14 +304,16 @@ class Wiki(object):
                 if os.path.isdir(fullname):
                     _walk(fullname, path_prefix + (name,))
                 elif name.endswith(self.markup.EXTENSION):
+                    ext_len = len(self.markup.EXTENSION)
                     if not path_prefix:
-                        url = name[:-3]
+                        url = name[:-ext_len]
                     else:
-                        url = os.path.join(path_prefix[0], name[:-3])
+                        url = os.path.join(path_prefix[0], name[:-ext_len])
                     if attr:
                         pages[getattr(page, attr)] = page
                     else:
-                        pages.append(Page(fullname, url.replace('\\', '/')))
+                        pages.append(Page(fullname, url.replace('\\', '/'),
+                                          markup=self.markup))
         if attr:
             pages = {}
         else:
