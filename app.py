@@ -381,8 +381,8 @@ class EditorForm(Form):
 
 
 class LoginForm(Form):
-    name = TextField('', [Required()])
-    password = PasswordField('', [Required()])
+    name = TextField('Name', [Required()])
+    password = PasswordField('Password', [Required()])
 
     def validate_name(form, field):
         user = users.get_user(field.data)
