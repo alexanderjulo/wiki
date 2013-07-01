@@ -321,7 +321,7 @@ class User(object):
 
 
 def get_default_authentication_method():
-    return app.config.get('DEFAULT_AUTHENTICATION_METHOD', 'cleartext')
+    return app.config.get('DEFAULT_AUTHENTICATION_METHOD', 'hash')
 
 
 def make_salted_hash(password, salt=None):
