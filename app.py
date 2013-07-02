@@ -132,10 +132,25 @@ class RestructuredText(Markup):
                     'link_stylesheet': True,
                     'syntax_highlight': 'short',
                     }
-        html, _, deps = self._rst2html(self.raw_content, settings_overrides=settings)
+
+        html, _, _ = self._rst2html(self.raw_content, settings_overrides=settings)
+
+        # Convert unknow links to internal wiki links.
+        # Examples:
+        #   Something_ will link to '/something'
+        #  `something great`_  to '/something_great'
+        #  `another thing <thing>`_  '/thing'
+        refs = re.findall(r'Unknown target name: &quot;(.*)&quot;', html)
+        if refs:
+            content = self.raw_content + self.get_autolinks(refs)
+            html, _, _ = self._rst2html(content, settings_overrides=settings)
         meta_lines, body = self.raw_content.split('\n\n', 1)
         meta = self._parse_meta(meta_lines.split('\n'))
         return html, body, meta
+
+    def get_autolinks(self, refs):
+        autolinks = '\n'.join(['.. _%s: /%s' % (ref, urlify(ref)) for ref in refs])
+        return '\n\n' + autolinks
 
     def _rst2html(self, source, source_path=None, source_class=docutils.io.StringInput,
                   destination_path=None, reader=None, reader_name='standalone',
@@ -368,6 +383,7 @@ class Wiki(object):
 """
 
 
+
 class UserManager(object):
     """A very simple user Manager, that saves it's data as json."""
     def __init__(self, path):
@@ -509,6 +525,17 @@ def protect(f):
 """
 
 
+def urlify(url):
+    # Cleans the url and corrects various errors.
+    # Remove multiple spaces and leading and trailing spaces
+    pageStub = re.sub('[ ]{2,}', ' ', url).strip()
+    # Changes spaces to underscores and make everything lowercase
+    pageStub = pageStub.lower().replace(' ', '_')
+    # Corrects Windows style folders
+    pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
+    return pageStub
+
+
 class URLForm(Form):
     url = TextField('', [Required()])
 
@@ -517,15 +544,7 @@ class URLForm(Form):
             raise ValidationError('The URL "%s" exists already.' % field.data)
 
     def clean_url(self, url):
-        # Cleans the url and corrects various errors.
-        # Remove multiple spaces and leading and trailing spaces
-        pageStub = re.sub('[ ]{2,}', ' ', url).strip()
-        # Changes spaces to underscores and make everything lowercase
-        pageStub = pageStub.lower().replace(' ', '_')
-        # Corrects Windows style folders
-        pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
-        return pageStub
-
+        return urlify(url)
 
 class SearchForm(Form):
     term = TextField('', [Required()])
