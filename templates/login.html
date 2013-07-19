@@ -3,10 +3,17 @@
 {% block title %}Login{% endblock title %}
 
 {% block content %}
-<form class="form form-inline" method="POST">
+<form class="form form-horizontal" method="POST">
 	{{ form.hidden_tag() }}
-	{{ form.name(placeholder='Username') }}
-	{{ form.password(placeholder='Password') }}
-	<input type="submit" class="btn btn-primary" value="Login">
+	{{ input(form.name) }}
+	{{ input(form.password) }}
+    <div class="form-actions">
+    <input type="submit" class="btn btn-primary" value="Login">
+or <a href="{{ url_for('user_signup') }}">create an account</a>
+
+    </div>
+
 </form>
+
+
 {% endblock content %}
