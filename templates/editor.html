@@ -14,7 +14,7 @@ Wiki Editor
 		<form method="post" class="form">
 			{{ form.hidden_tag() }}
 			{{ input(form.title, placeholder="Title", class="span7") }}
-			{{ input(form.body, placeholder="Markdown", class="span7", rows="20") }}
+			{{ input(form.body, placeholder=markup.NAME|capitalize, class="span7", rows="20") }}
 			{{ input(form.tags, placeholder="Tags (comma separated)", class="span7") }}
 			<div class="form-actions">
         <div class="pull-left">
@@ -33,24 +33,7 @@ Wiki Editor
 
 {% block sidebar %}
 <h3>Editor How-To</h3>
-<p>This editor is <a href="http://daringfireball.net/projects/markdown/">markdown</a> featured.</p>
-<pre><code>* I
-* am
-* a
-* list</code></pre>
-Turns into:
-<ul>
-<li>I</li>
-<li>am</li>
-<li>a</li>
-<li>list</li>
-</ul>
-<p><code>**bold** and *italics*</code> turn into <strong>bold</strong> and <em>italics</em>. Very easy!</p>
-<p>Create links with <code>[NoTube](http://www.notube.com)</code>. They turn into <a href="http://www.notube.com">NoTube</a>.</p>
-<p>Headers are as follows:</p>
-<pre><code># Level 1
-## Level 2
-### Level 3</code></pre>
+{{ markup.howto()|safe }}
 <p></p>
 
 {% endblock sidebar %}

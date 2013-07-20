@@ -1,13 +1,13 @@
 # Readme
 
 ## About
-As I wanted a wiki that just uses plain markdown files as backend, that is easy
+As I wanted a wiki that just uses plain files as backend, that is easy
 to use and that is written in python, to enable me to easily hack around,
 but found nothing, I just wrote this down. I hope that it might help others ,too.
 
 ## Features
 
-* Markdown Syntax Editing
+* Markdown (default) or reStructuredText Syntax Editing
 * Tags
 * Regex Search
 * Random URLs
@@ -37,6 +37,12 @@ that contains at least the following:
 	# encoding: <your encoding (probably utf-8)
 	SECRET_KEY='a unique and long key'
 	TITLE='Wiki' # Title Optional
+
+If you want to use reStructuredText instead of Markdown, install `docutils` and add 
+        
+        MARKUP='restructuredtext' 
+
+to the config file. 
 
 ## Start
 Afterwards just run the app however you want. I personally recommend something
