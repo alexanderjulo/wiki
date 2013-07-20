@@ -13,12 +13,12 @@ from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
 from flask.ext.script import Manager
 
+from exts import cache
 
 """
     Wiki classes
     ~~~~~~~~~~~~
 """
-
 
 def convertMarkdown(content):
     # Processes Markdown text to HTML, returns original markdown text,
@@ -45,6 +45,9 @@ class Page(object):
 
     def render(self):
         self._html, self.body, self._meta = convertMarkdown(self.content)
+
+    def __repr__(self):
+        return "%s(%s)" % (self.__class__.__name__, self.path)
 
     def save(self, update=True):
         folder = os.path.dirname(self.path)
@@ -78,8 +81,12 @@ class Page(object):
     def html(self):
         return self._html
 
+    @cache.memoize()
     def __html__(self):
         return self.html
+
+    def delete_cache(self):
+        cache.delete(self.__html__.make_cache_key(self.__html__.uncached, self))
 
     @property
     def title(self):
@@ -411,7 +418,8 @@ try:
 except IOError:
     print ("Startup Failure: You need to place a "
            "config.py in your content directory.")
-
+CACHE_DIR = os.path.join(app.config.get('CONTENT_DIR'), 'cache')
+cache.init_app(app, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': CACHE_DIR})
 manager = Manager(app)
 
 loginmanager = LoginManager()
@@ -432,7 +440,6 @@ def load_user(name):
     Routes
     ~~~~~~
 """
-
 
 @app.route('/')
 @protect
@@ -476,7 +483,8 @@ def edit(url):
             page = wiki.get_bare(url)
         form.populate_obj(page)
         page.save()
-        flash('"%s" was saved.' % page.title, 'success')
+        page.delete_cache()
+        flash('"%s" was saved.' % page.title, 'success-once')
         return redirect(url_for('display', url=url))
     return render_template('editor.html', form=form, page=page)
 
