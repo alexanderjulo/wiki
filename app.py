@@ -7,8 +7,9 @@ import json
 from functools import wraps
 from flask import (Flask, render_template, flash, redirect, url_for, request,
                    abort)
-from flask.ext.wtf import (Form, TextField, TextAreaField, PasswordField,
-                           Required, ValidationError)
+from flask.ext.wtf import Form
+from wtforms import (TextField, TextAreaField, PasswordField)
+from wtforms.validators import (InputRequired, ValidationError)
 from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
 from flask.ext.script import Manager
@@ -352,7 +353,7 @@ def protect(f):
 
 
 class URLForm(Form):
-    url = TextField('', [Required()])
+    url = TextField('', [InputRequired()])
 
     def validate_url(form, field):
         if wiki.exists(field.data):
@@ -370,18 +371,18 @@ class URLForm(Form):
 
 
 class SearchForm(Form):
-    term = TextField('', [Required()])
+    term = TextField('', [InputRequired()])
 
 
 class EditorForm(Form):
-    title = TextField('', [Required()])
-    body = TextAreaField('', [Required()])
+    title = TextField('', [InputRequired()])
+    body = TextAreaField('', [InputRequired()])
     tags = TextField('')
 
 
 class LoginForm(Form):
-    name = TextField('', [Required()])
-    password = PasswordField('', [Required()])
+    name = TextField('', [InputRequired()])
+    password = PasswordField('', [InputRequired()])
 
     def validate_name(form, field):
         user = users.get_user(field.data)
