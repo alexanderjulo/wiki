@@ -21,14 +21,43 @@ from flask.ext.script import Manager
 """
 
 
-def convertMarkdown(content):
-    # Processes Markdown text to HTML, returns original markdown text,
-    # and adds meta
-    md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
-    html = md.convert(content)
-    body = content.split('\n\n', 1)[1]
-    meta = md.Meta
-    return html, body, meta
+class Processors(object):
+    def __init__(self, content=""):
+        self.content = self.pre(content)
+
+    def wikilink(self, html):
+        link = r"((?<!\<code\>)\[\[([^<].+?) \s*([|] \s* (.+?) \s*)?]])"
+        compLink = re.compile(link, re.X | re.U)
+        for i in compLink.findall(html):
+            title = [i[-1] if i[-1] else i[1]][0]
+            url = self.clean_url(i[1])
+            formattedLink = u"<a href='{2}{0}'>{1}</a>".format(url, title, '/')
+            html = re.sub(compLink, formattedLink, html, count=1)
+        return html
+
+    def clean_url(self, url):
+        # Cleans the url and corrects various errors.
+        # Remove multiple spaces and leading and trailing spaces
+        pageStub = re.sub('[ ]{2,}', ' ', url).strip()
+        # Changes spaces to underscores and make everything lowercase
+        pageStub = pageStub.lower().replace(' ', '_')
+        # Corrects Windows style folders
+        pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
+        return pageStub
+
+    def pre(self, content):
+        return content
+
+    def post(self, html):
+        return self.wikilink(html)
+
+    def out(self):
+        md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
+        html = md.convert(self.content)
+        phtml = self.post(html)
+        body = self.content.split('\n\n', 1)[1]
+        meta = md.Meta
+        return phtml, body, meta
 
 
 class Page(object):
@@ -45,7 +74,8 @@ class Page(object):
             self.content = f.read().decode('utf-8')
 
     def render(self):
-        self._html, self.body, self._meta = convertMarkdown(self.content)
+        processed = Processors(self.content)
+        self._html, self.body, self._meta = processed.out()
 
     def save(self, update=True):
         folder = os.path.dirname(self.path)
@@ -360,14 +390,7 @@ class URLForm(Form):
             raise ValidationError('The URL "%s" exists already.' % field.data)
 
     def clean_url(self, url):
-        # Cleans the url and corrects various errors.
-        # Remove multiple spaces and leading and trailing spaces
-        pageStub = re.sub('[ ]{2,}', ' ', url).strip()
-        # Changes spaces to underscores and make everything lowercase
-        pageStub = pageStub.lower().replace(' ', '_')
-        # Corrects Windows style folders
-        pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
-        return pageStub
+        return Processors().clean_url(url)
 
 
 class SearchForm(Form):
@@ -487,7 +510,8 @@ def edit(url):
 def preview():
     a = request.form
     data = {}
-    data['html'], data['body'], data['meta'] = convertMarkdown(a['body'])
+    processed = Processors(a['body'])
+    data['html'], data['body'], data['meta'] = processed.out()
     return data['html']
 
 
