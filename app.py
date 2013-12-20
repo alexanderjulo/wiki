@@ -22,10 +22,30 @@ from flask.ext.script import Manager
 
 
 class Processors(object):
+    """This class is collection of processors for various content items.
+    """
     def __init__(self, content=""):
+        """Initialization function.  Runs Processors().pre() on content.
+
+        Args:
+            None
+
+        Kwargs:
+            content (str): Preprocessed content directly from the file or
+            textarea.
+        """
         self.content = self.pre(content)
 
     def wikilink(self, html):
+        """Processes Wikilink syntax "[[Link]]" within content body.  This is
+        intended to be run after the content has been processed by Markdown.
+
+        Args:
+            html (str): Post-processed HTML output from Markdown
+
+        Kwargs:
+            None
+        """
         link = r"((?<!\<code\>)\[\[([^<].+?) \s*([|] \s* (.+?) \s*)?]])"
         compLink = re.compile(link, re.X | re.U)
         for i in compLink.findall(html):
@@ -36,22 +56,49 @@ class Processors(object):
         return html
 
     def clean_url(self, url):
-        # Cleans the url and corrects various errors.
-        # Remove multiple spaces and leading and trailing spaces
+        """Cleans the url and corrects various errors.  Removes multiple spaces
+        and all leading and trailing spaces.  Changes spaces to underscores and
+        makes all characters lowercase.  Also takes care of Windows style
+        folders use.
+
+        Args:
+            url (str): URL link
+
+        Kwargs:
+            None
+        """
         pageStub = re.sub('[ ]{2,}', ' ', url).strip()
-        # Changes spaces to underscores and make everything lowercase
         pageStub = pageStub.lower().replace(' ', '_')
-        # Corrects Windows style folders
         pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
         return pageStub
 
     def pre(self, content):
+        """Content preprocessor.  This currently does nothing.
+
+        Args:
+            content (str): Preprocessed content directly from the file or
+            textarea.
+
+        Kwargs:
+            None
+        """
         return content
 
     def post(self, html):
+        """Content post-processor.
+
+        Args:
+            html (str): Post-processed HTML output from Markdown
+
+        Kwargs:
+            None
+        """
         return self.wikilink(html)
 
     def out(self):
+        """Final content output.  Processes the Markdown, post-processes, and
+        Meta data.
+        """
         md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
         html = md.convert(self.content)
         phtml = self.post(html)
