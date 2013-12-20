@@ -45,6 +45,11 @@ class Processors(object):
 
         Kwargs:
             None
+
+        Syntax: This accepts Wikilink syntax in the form of [[WikiLink]] or
+        [[url/location|LinkName]].  Everything is referenced from the base
+        location "/", therefore sub-pages need to use the
+        [[page/subpage|Subpage]].
         """
         link = r"((?<!\<code\>)\[\[([^<].+?) \s*([|] \s* (.+?) \s*)?]])"
         compLink = re.compile(link, re.X | re.U)
