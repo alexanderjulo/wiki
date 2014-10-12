@@ -576,6 +576,7 @@ def preview():
 
 
 @app.route('/move/<path:url>/', methods=['GET', 'POST'])
+@protect
 def move(url):
     page = wiki.get_or_404(url)
     form = URLForm(obj=page)
@@ -587,6 +588,7 @@ def move(url):
 
 
 @app.route('/delete/<path:url>/')
+@protect
 def delete(url):
     page = wiki.get_or_404(url)
     wiki.delete(url)
