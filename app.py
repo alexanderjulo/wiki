@@ -9,7 +9,7 @@ from flask import (Flask, render_template, flash, redirect, url_for, request,
                    abort)
 from flask.ext.wtf import Form
 from wtforms import (TextField, TextAreaField, PasswordField)
-from wtforms.validators import (InputRequired, ValidationError)
+from wtforms.validators import (InputRequired, ValidationError, Required, EqualTo)
 from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
 from flask.ext.script import Manager
@@ -56,7 +56,7 @@ class Processors(object):
         for i in compLink.findall(html):
             title = [i[-1] if i[-1] else i[1]][0]
             url = self.clean_url(i[1])
-            formattedLink = u"<a href='{2}{0}'>{1}</a>".format(url, title, '/')
+            formattedLink = "<a href='{2}{0}'>{1}</a>".format(url, title, '/')
             html = re.sub(compLink, formattedLink, html, count=1)
         return html
 
@@ -123,7 +123,7 @@ class Page(object):
 
     def load(self):
         with open(self.path, 'rU') as f:
-            self.content = f.read().decode('utf-8')
+            self.content = f.read()
 
     def render(self):
         processed = Processors(self.content)
@@ -134,11 +134,11 @@ class Page(object):
         if not os.path.exists(folder):
             os.makedirs(folder)
         with open(self.path, 'w') as f:
-            for key, value in self._meta.items():
-                line = u'%s: %s\n' % (key, value)
-                f.write(line.encode('utf-8'))
-            f.write('\n'.encode('utf-8'))
-            f.write(self.body.replace('\r\n', '\n').encode('utf-8'))
+            for key, value in list(self._meta.items()):
+                line = '%s: %s\n' % (key, value)
+                f.write(line)
+            f.write('\n')
+            f.write(self.body.replace('\r\n', '\n'))
         if update:
             self.load()
             self.render()
@@ -151,7 +151,7 @@ class Page(object):
         item = self._meta[name]
         if len(item) == 1:
             return item[0]
-        print item
+        print(item)
         return item
 
     def __setitem__(self, name, value):
@@ -220,7 +220,7 @@ class Wiki(object):
         path = self.path(url)
         if not self.exists(url):
             return False
-        print path
+        print(path)
         os.remove(path)
         return True
 
@@ -471,6 +471,17 @@ class LoginForm(Form):
         if not user.check_password(field.data):
             raise ValidationError('Username and password do not match.')
 
+class RegisterForm(Form):
+    name = TextField('',[InputRequired()])
+    password = PasswordField('Password', [Required(), EqualTo('confirm', message='Passwords must match')])
+    confirm  = PasswordField('Repeat Password')
+
+    def validate_name(form, field):
+        user = users.get_user(field.data)
+        if user:
+            raise ValidationError("This user already exists.")
+
+
 
 """
     Application Setup
@@ -511,7 +522,6 @@ def load_user(name):
 
 
 @app.route('/')
-@protect
 def home():
     page = wiki.get('home')
     if page:
@@ -520,14 +530,12 @@ def home():
 
 
 @app.route('/index/')
-@protect
 def index():
     pages = wiki.index()
     return render_template('index.html', pages=pages)
 
 
 @app.route('/<path:url>/')
-@protect
 def display(url):
     page = wiki.get_or_404(url)
     return render_template('page.html', page=page)
@@ -589,21 +597,18 @@ def delete(url):
 
 
 @app.route('/tags/')
-@protect
 def tags():
     tags = wiki.get_tags()
     return render_template('tags.html', tags=tags)
 
 
 @app.route('/tag/<string:name>/')
-@protect
 def tag(name):
     tagged = wiki.index_by_tag(name)
     return render_template('tag.html', pages=tagged, tag=name)
 
 
 @app.route('/search/', methods=['GET', 'POST'])
-@protect
 def search():
     form = SearchForm()
     if form.validate_on_submit():
@@ -639,10 +644,13 @@ def user_index():
     pass
 
 
-@app.route('/user/create/')
+@app.route('/user/create/', methods=['GET', 'POST'])
 def user_create():
-    pass
-
+    form = RegisterForm()
+    if form.validate_on_submit():
+        user = users.add_user(form.name.data,form.password.data)
+        return redirect(url_for('user_login'))
+    return render_template('register.html',form=form)
 
 @app.route('/user/<int:user_id>/')
 def user_admin(user_id):
