@@ -56,7 +56,7 @@ class Processors(object):
         for i in compLink.findall(html):
             title = [i[-1] if i[-1] else i[1]][0]
             url = self.clean_url(i[1])
-            formattedLink = u"<a href='{2}{0}'>{1}</a>".format(url, title, '/')
+            formattedLink = u"<a href='{0}'>{1}</a>".format(url_for('display', url=url), title)
             html = re.sub(compLink, formattedLink, html, count=1)
         return html
 
