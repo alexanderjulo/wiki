@@ -104,7 +104,7 @@ class Processors(object):
         """Final content output.  Processes the Markdown, post-processes, and
         Meta data.
         """
-        md = markdown.Markdown(['codehilite', 'fenced_code', 'meta'])
+        md = markdown.Markdown(['codehilite', 'fenced_code', 'meta', 'tables'])
         html = md.convert(self.content)
         phtml = self.post(html)
         body = self.content.split('\n\n', 1)[1]
