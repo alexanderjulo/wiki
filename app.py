@@ -258,7 +258,7 @@ class Wiki(object):
         os.remove(path)
         return True
 
-    def index(self, attr=None):
+    def index(self):
         def _walk(directory, path_prefix=()):
             for name in os.listdir(directory):
                 fullname = os.path.join(directory, name)
@@ -269,18 +269,11 @@ class Wiki(object):
                         url = name[:-3]
                     else:
                         url = os.path.join(path_prefix[0], name[:-3])
-                    if attr:
-                        pages[getattr(page, attr)] = page  # TODO: looks like bug, but doesn't appear to be used
-                    else:
-                        pages.append(Page(fullname, url.replace('\\', '/')))
-        if attr:
-            pages = {}
-        else:
-            pages = []
+                    pages.append(Page(fullname, url.replace('\\', '/')))
+        pages = []
         _walk(self.root)
-        if not attr:
-            return sorted(pages, key=lambda x: x.title.lower())
-        return pages
+        return sorted(pages, key=lambda x: x.title.lower())
+
 
     def get_tags(self):
         pages = self.index()
