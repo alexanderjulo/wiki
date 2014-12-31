@@ -4,6 +4,7 @@ import os
 import re
 import markdown
 import json
+import string
 from functools import wraps
 from flask import (Flask, render_template, flash, redirect, url_for, request,
                    abort)
@@ -31,6 +32,7 @@ except IOError:
     print ("Startup Failure: You need to place a "
            "config.py in your content directory.")
 
+#app.debug = True
 manager = Manager(app)
 
 loginmanager = LoginManager()
@@ -99,6 +101,9 @@ class Processors(object):
         pageStub = re.sub('[ ]{2,}', ' ', url).strip()
         pageStub = pageStub.lower().replace(' ', '_')
         pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
+        pageStub = pageStub.replace('/', '-')
+        valid_characters = string.ascii_letters + string.digits + '_' + '-'
+        pageStub = ''.join(c for c in pageStub if c in valid_characters)
         return pageStub
 
     def pre(self, content):
