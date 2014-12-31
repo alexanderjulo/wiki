@@ -101,8 +101,7 @@ class Processors(object):
         pageStub = re.sub('[ ]{2,}', ' ', url).strip()
         pageStub = pageStub.lower().replace(' ', '_')
         pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
-        pageStub = pageStub.replace('/', '-')
-        valid_characters = string.ascii_letters + string.digits + '_' + '-'
+        valid_characters = string.ascii_letters + string.digits + '_' + '-' + '/'
         pageStub = ''.join(c for c in pageStub if c in valid_characters)
         return pageStub
 
@@ -282,10 +281,6 @@ class Wiki(object):
         if not attr:
             return sorted(pages, key=lambda x: x.title.lower())
         return pages
-
-    def get_by_title(self, title):
-        pages = self.index(attr='title')
-        return pages.get(title)
 
     def get_tags(self):
         pages = self.index()
