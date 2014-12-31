@@ -589,7 +589,7 @@ def move(url):
     return render_template('move.html', form=form, page=page)
 
 
-@app.route('/delete/<path:url>/')
+@app.route('/delete/<path:url>/', methods=['POST'])
 @protect
 def delete(url):
     page = wiki.get_or_404(url)

@@ -1,38 +1,40 @@
 {% extends "base.html" %}
 
 {% block title %}
-	{{ page.title }}
+    {{ page.title }}
 {% endblock title %}
 
 {% block content %}
-  <div id="confirmDelete" class="modal hide fade" aria-hidden="true">
-    <div class="modal-header">
-      <h3>Are you sure?</h3>
+    <div id="confirmDelete" class="modal hide fade" aria-hidden="true">
+        <div class="modal-header">
+            <h3>Are you sure?</h3>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete {{ page.title }}? This cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <form id="delete" action="{{ url_for('delete', url=page.url) }}" method="POST">
+                <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">No</a>
+                <input type="submit" class="btn btn-danger" value="Yes, delete">
+            </form>
+        </div>
     </div>
-    <div class="modal-body">
-      <p>Are you sure you want to delete {{ page.title }}?  This cannot be undone.</p>
-    </div>
-    <div class="modal-footer">
-      <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">No</a>
-      <a href="{{ url_for('delete', url=page.url) }}" class="btn btn-danger">Yes, delete.</a>
-    </div>
-  </div>
-	{{ page }}
+    {{ page }}
 {% endblock content %}
 
 {% block sidebar %}
-{% if page.tags %}
-<h3>Tags</h3>
-  <ul>
-      {% for tag in page.tags.split(',') %}
-        <li><a href="{{ url_for('tag', name=tag.strip()) }}">{{ tag|trim }}</a></li>
-      {% endfor %}
-  </ul>
-{% endif %}
-<h3>Actions</h3>
-<ul class="nav nav-tabs nav-stacked">
-	<li><a href="{{ url_for('edit', url=page.url) }}">Edit</a></li>
-  <li><a href="{{ url_for('move', url=page.url) }}">Move</a></li>
-  <li><a href="#confirmDelete" data-toggle="modal" class="text-error">Delete</a></li>
-</ul>
+    {% if page.tags %}
+        <h3>Tags</h3>
+        <ul>
+            {% for tag in page.tags.split(',') %}
+                <li><a href="{{ url_for('tag', name=tag.strip()) }}">{{ tag|trim }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <h3>Actions</h3>
+    <ul class="nav nav-tabs nav-stacked">
+        <li><a href="{{ url_for('edit', url=page.url) }}">Edit</a></li>
+        <li><a href="{{ url_for('move', url=page.url) }}">Move</a></li>
+        <li><a href="#confirmDelete" data-toggle="modal" class="text-error">Delete</a></li>
+    </ul>
 {% endblock sidebar %}
