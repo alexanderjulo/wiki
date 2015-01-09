@@ -166,7 +166,10 @@ class Page(object):
 
     @property
     def title(self):
-        return self['title']
+        try:
+            return self['title']
+        except KeyError:
+            return self.url
 
     @title.setter
     def title(self, value):
@@ -174,7 +177,10 @@ class Page(object):
 
     @property
     def tags(self):
-        return self['tags']
+        try:
+            return self['tags']
+        except KeyError:
+            return ""
 
     @tags.setter
     def tags(self, value):
