@@ -4,15 +4,41 @@ import os
 import re
 import markdown
 import json
+import string
 from functools import wraps
 from flask import (Flask, render_template, flash, redirect, url_for, request,
                    abort)
 from flask.ext.wtf import Form
-from wtforms import (TextField, TextAreaField, PasswordField)
+from wtforms import (BooleanField, TextField, TextAreaField, PasswordField)
 from wtforms.validators import (InputRequired, ValidationError)
 from flask.ext.login import (LoginManager, login_required, current_user,
                              login_user, logout_user)
 from flask.ext.script import Manager
+
+
+"""
+    Application Setup
+    ~~~~~~~~~
+"""
+
+app = Flask(__name__)
+app.config['CONTENT_DIR'] = 'content'
+app.config['TITLE'] = 'wiki'
+try:
+    app.config.from_pyfile(
+        os.path.join(app.config.get('CONTENT_DIR'), 'config.py')
+    )
+except IOError:
+    print ("Startup Failure: You need to place a "
+           "config.py in your content directory.")
+
+#app.debug = True
+manager = Manager(app)
+
+loginmanager = LoginManager()
+loginmanager.init_app(app)
+loginmanager.login_view = 'user_login'
+
 
 
 """
@@ -75,6 +101,8 @@ class Processors(object):
         pageStub = re.sub('[ ]{2,}', ' ', url).strip()
         pageStub = pageStub.lower().replace(' ', '_')
         pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
+        valid_characters = string.ascii_letters + string.digits + '_' + '-' + '/'
+        pageStub = ''.join(c for c in pageStub if c in valid_characters)
         return pageStub
 
     def pre(self, content):
@@ -230,7 +258,7 @@ class Wiki(object):
         os.remove(path)
         return True
 
-    def index(self, attr=None):
+    def index(self):
         def _walk(directory, path_prefix=()):
             for name in os.listdir(directory):
                 fullname = os.path.join(directory, name)
@@ -241,22 +269,11 @@ class Wiki(object):
                         url = name[:-3]
                     else:
                         url = os.path.join(path_prefix[0], name[:-3])
-                    if attr:
-                        pages[getattr(page, attr)] = page
-                    else:
-                        pages.append(Page(fullname, url.replace('\\', '/')))
-        if attr:
-            pages = {}
-        else:
-            pages = []
+                    pages.append(Page(fullname, url.replace('\\', '/')))
+        pages = []
         _walk(self.root)
-        if not attr:
-            return sorted(pages, key=lambda x: x.title.lower())
-        return pages
+        return sorted(pages, key=lambda x: x.title.lower())
 
-    def get_by_title(self, title):
-        pages = self.index(attr='title')
-        return pages.get(title)
 
     def get_tags(self):
         pages = self.index()
@@ -281,9 +298,9 @@ class Wiki(object):
                 tagged.append(page)
         return sorted(tagged, key=lambda x: x.title.lower())
 
-    def search(self, term, attrs=['title', 'tags', 'body']):
+    def search(self, term, ignore_case=True, attrs=['title', 'tags', 'body']):
         pages = self.index()
-        regex = re.compile(term)
+        regex = re.compile(term, re.IGNORECASE if ignore_case else 0)
         matched = []
         for page in pages:
             for attr in attrs:
@@ -453,6 +470,7 @@ class URLForm(Form):
 
 class SearchForm(Form):
     term = TextField('', [InputRequired()])
+    ignore_case = BooleanField(description='Ignore Case', default=app.config.get('DEFAULT_SEARCH_IGNORE_CASE', True))
 
 
 class EditorForm(Form):
@@ -478,28 +496,6 @@ class LoginForm(Form):
             raise ValidationError('Username and password do not match.')
 
 
-"""
-    Application Setup
-    ~~~~~~~~~
-"""
-
-app = Flask(__name__)
-app.config['CONTENT_DIR'] = 'content'
-app.config['TITLE'] = 'wiki'
-try:
-    app.config.from_pyfile(
-        os.path.join(app.config.get('CONTENT_DIR'), 'config.py')
-    )
-except IOError:
-    print ("Startup Failure: You need to place a "
-           "config.py in your content directory.")
-
-manager = Manager(app)
-
-loginmanager = LoginManager()
-loginmanager.init_app(app)
-loginmanager.login_view = 'user_login'
-
 wiki = Wiki(app.config.get('CONTENT_DIR'))
 
 users = UserManager(app.config.get('CONTENT_DIR'))
@@ -508,6 +504,7 @@ users = UserManager(app.config.get('CONTENT_DIR'))
 @loginmanager.user_loader
 def load_user(name):
     return users.get_user(name)
+
 
 
 """
@@ -585,7 +582,7 @@ def move(url):
     return render_template('move.html', form=form, page=page)
 
 
-@app.route('/delete/<path:url>/')
+@app.route('/delete/<path:url>/', methods=['POST'])
 @protect
 def delete(url):
     page = wiki.get_or_404(url)
@@ -613,7 +610,7 @@ def tag(name):
 def search():
     form = SearchForm()
     if form.validate_on_submit():
-        results = wiki.search(form.term.data)
+        results = wiki.search(form.term.data, form.ignore_case.data)
         return render_template('search.html', form=form,
                                results=results, search=form.term.data)
     return render_template('search.html', form=form, search=None)
