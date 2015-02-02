@@ -10,10 +10,11 @@
 
 {% block content %}
 <div class="row">
-	<div class="span5 offset1">
+	<div class="span8 offset1">
 		<form class="form-inline well" method="POST">
 			{{ form.hidden_tag() }}
 			{{ form.term(placeholder='Search for.. (regex accepted)') }}
+            {{ form.ignore_case() }} Ignore Case
 			<input type="submit" class="btn btn-success pull-right" value="Search!">
 		</form>
 	</div>
