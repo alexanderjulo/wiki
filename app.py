@@ -251,7 +251,7 @@ class Wiki(object):
         # common prefix length must be at least as root length is
         # otherwise there are probably some '..' links in target path leading
         # us outside defined root directory
-        if len(common) < len(self.root):
+        if len(common) < len(root):
             raise RuntimeError(
                 'Possible write attempt outside content directory: '
                 '%s' % newurl)
