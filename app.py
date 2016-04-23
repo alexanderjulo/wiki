@@ -255,6 +255,10 @@ class Wiki(object):
             raise RuntimeError(
                 'Possible write attempt outside content directory: '
                 '%s' % newurl)
+        # create folder if it does not exists yet
+        folder = os.path.dirname(target)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
         os.rename(source, target)
 
     def delete(self, url):
