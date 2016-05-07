@@ -365,7 +365,6 @@ class UserManager(object):
             'active': active,
             'roles': roles,
             'authentication_method': authentication_method,
-            'authenticated': False
         }
         # Currently we have only two authentication_methods: cleartext and
         # hash. If we get more authentication_methods, we will need to go to a
@@ -418,7 +417,7 @@ class User(object):
         self.manager.update(self.name, self.data)
 
     def is_authenticated(self):
-        return self.data.get('authenticated')
+        return True
 
     def is_active(self):
         return self.data.get('active')
@@ -526,7 +525,6 @@ users = UserManager(app.config.get('CONTENT_DIR'))
 @loginmanager.user_loader
 def load_user(name):
     return users.get_user(name)
-
 
 
 """
@@ -644,7 +642,6 @@ def user_login():
     if form.validate_on_submit():
         user = users.get_user(form.name.data)
         login_user(user)
-        user.set('authenticated', True)
         flash('Login successful.', 'success')
         return redirect(request.args.get("next") or url_for('index'))
     return render_template('login.html', form=form)
@@ -653,7 +650,6 @@ def user_login():
 @app.route('/user/logout/')
 @login_required
 def user_logout():
-    current_user.set('authenticated', False)
     logout_user()
     flash('Logout successful.', 'success')
     return redirect(url_for('index'))
