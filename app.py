@@ -279,7 +279,7 @@ class Wiki(object):
                     if not path_prefix:
                         url = name[:-3]
                     else:
-                        url = os.path.join(path_prefix[0], name[:-3])
+                        url = os.path.join(*(path_prefix + (name[:-3],)))
                     if attr:
                         pages[getattr(page, attr)] = page  # TODO: looks like bug, but doesn't appear to be used
                     else:
