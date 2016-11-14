@@ -79,12 +79,13 @@ class Processors(object):
         compLink = re.compile(link, re.X | re.U)
         for i in compLink.findall(html):
             title = [i[-1] if i[-1] else i[1]][0]
-            url = self.clean_url(i[1])
+            url = Processors.clean_url(i[1])
             formattedLink = u"<a href='{0}'>{1}</a>".format(url_for('display', url=url), title)
             html = re.sub(compLink, formattedLink, html, count=1)
         return html
 
-    def clean_url(self, url):
+    @staticmethod
+    def clean_url(url):
         """Cleans the url and corrects various errors.  Removes multiple spaces
         and all leading and trailing spaces.  Changes spaces to underscores and
         makes all characters lowercase.  Also takes care of Windows style
@@ -96,9 +97,11 @@ class Processors(object):
         Kwargs:
             None
         """
-        pageStub = re.sub('[ ]{2,}', ' ', url).strip()
+        pageStub = url.replace('\\\\', '/').replace('\\', '/')
+        pageStub = pageStub.strip('/')
+        pageStub = re.sub('[/]{2,}', '/', pageStub)
+        pageStub = re.sub('[ ]{2,}', ' ', pageStub).strip()
         pageStub = pageStub.lower().replace(' ', '_')
-        pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
         return pageStub
 
     def pre(self, content):
@@ -478,16 +481,40 @@ def protect(f):
     ~~~~~
 """
 
+def get_app_routes_leading_elements():
+    """
+    Return set of leading url parts (string between first two slashes),
+    which does not contains flask regex inside, and was registred using
+    @app.route() decorator. Root url ('/') is ommited.
+    """
+    # get list of rules registred using @app.route()
+    urls = [rule.rule for rule in app.url_map.iter_rules()]
+    # tranform urls into strings between first two slashes
+    urls = map(lambda url: url.split('/')[1], urls)
+    # return set of those which does not contains '<' or '>' char
+    # (as @app.route('/<path:url>/') will create)
+    return set(filter(lambda elem: elem and re.match('[^<>]', elem), urls))
+
 
 class URLForm(Form):
     url = TextField('', [InputRequired()])
 
     def validate_url(form, field):
-        if wiki.exists(field.data):
-            raise ValidationError('The URL "%s" exists already.' % field.data)
+        sanitized_url = Processors.clean_url(field.data)
+        system_urls_lead_parts = get_app_routes_leading_elements()
+        # Disallow create already used urls.
+        # NOTE I'm not sure whether Windows slashes do not need to be
+        # sanitized later. At least space to underscore is necessary to check
+        # now - or maybe in the Wiki object itself.
+        # Leading url part (before slash) must not equals to system urls
+        # leading parts (/create/, /edit/ and so on).
+        if (wiki.exists(sanitized_url) or
+                sanitized_url.split('/')[0] in system_urls_lead_parts):
+            raise ValidationError(
+                'The URL "%s" exists already.' % sanitized_url)
 
     def clean_url(self, url):
-        return Processors().clean_url(url)
+        return Processors.clean_url(url)
 
 
 class SearchForm(Form):
@@ -598,7 +625,7 @@ def move(url):
     page = wiki.get_or_404(url)
     form = URLForm(obj=page)
     if form.validate_on_submit():
-        newurl = form.url.data
+        newurl = form.clean_url(form.url.data)
         wiki.move(url, newurl)
         return redirect(url_for('.display', url=newurl))
     return render_template('move.html', form=form, page=page)
