@@ -3,6 +3,7 @@ import unittest
 import tempfile
 import shutil
 
+import testing_env
 # TODO default content dir must exists before import
 import app
 
