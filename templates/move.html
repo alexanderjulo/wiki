@@ -4,7 +4,7 @@
 {% block content %}
 <form method="POST" class="form-inline">
     {{ form.hidden_tag() }}
-    {{ input(form.url, placeholder="New URL of the page") }}
+    {{ input(form.url, placeholder="New URL of the page", autocomplete="off") }}
     <input type="submit" class="btn btn-success" value="Create">
 </form>
 {% endblock content %}

@@ -13,7 +13,7 @@
 	<div class="span8 offset1">
 		<form class="form-inline well" method="POST">
 			{{ form.hidden_tag() }}
-			{{ form.term(placeholder='Search for.. (regex accepted)') }}
+			{{ form.term(placeholder='Search for.. (regex accepted)', autocomplete="off") }}
             {{ form.ignore_case() }} Ignore Case
 			<input type="submit" class="btn btn-success pull-right" value="Search!">
 		</form>
