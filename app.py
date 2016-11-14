@@ -500,12 +500,18 @@ class URLForm(Form):
     url = TextField('', [InputRequired()])
 
     def validate_url(form, field):
-        if wiki.exists(field.data):
-            raise ValidationError('The URL "%s" exists already.' % field.data)
-        system_urls_lead = get_app_routes_leading_elements()
-        # do not allow to name first part url (before slash) as system url
-        if Processors.clean_url(field.data).split('/')[0] in system_urls_lead:
-            raise ValidationError('The URL "%s" exists already.' % field.data)
+        sanitized_url = Processors.clean_url(field.data)
+        system_urls_lead_parts = get_app_routes_leading_elements()
+        # Disallow create already used urls.
+        # NOTE I'm not sure whether Windows slashes do not need to be
+        # sanitized later. At least space to underscore is necessary to check
+        # now - or maybe in the Wiki object itself.
+        # Leading url part (before slash) must not equals to system urls
+        # leading parts (/create/, /edit/ and so on).
+        if (wiki.exists(sanitized_url) or
+                sanitized_url.split('/')[0] in system_urls_lead_parts):
+            raise ValidationError(
+                'The URL "%s" exists already.' % sanitized_url)
 
     def clean_url(self, url):
         return Processors.clean_url(url)
