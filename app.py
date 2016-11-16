@@ -21,7 +21,7 @@ from flask.ext.script import Manager
 """
 
 app = Flask(__name__)
-app.config['CONTENT_DIR'] = 'content'
+app.config['CONTENT_DIR'] = u'content'
 app.config['TITLE'] = 'wiki'
 try:
     app.config.from_pyfile(
