@@ -4,3 +4,6 @@ venv
 *.sublime-*
 content/
 .DS_Store
+.cache
+.eggs
+*.egg-info
