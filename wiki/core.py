@@ -2,12 +2,13 @@
     Wiki core
     ~~~~~~~~~
 """
+from collections import OrderedDict
+from io import open
 import os
 import re
-from collections import OrderedDict
 
-import markdown
 from flask import abort
+import markdown
 
 
 class Processors(object):
@@ -120,8 +121,8 @@ class Page(object):
             self.render()
 
     def load(self):
-        with open(self.path, 'rU') as f:
-            self.content = f.read().decode('utf-8')
+        with open(self.path, 'r', encoding='utf-8') as f:
+            self.content = f.read()
 
     def render(self):
         processed = Processors(self.content)
@@ -131,12 +132,12 @@ class Page(object):
         folder = os.path.dirname(self.path)
         if not os.path.exists(folder):
             os.makedirs(folder)
-        with open(self.path, 'w') as f:
+        with open(self.path, 'w', encoding='utf-8') as f:
             for key, value in self._meta.items():
                 line = u'%s: %s\n' % (key, value)
-                f.write(line.encode('utf-8'))
-            f.write('\n'.encode('utf-8'))
-            f.write(self.body.replace('\r\n', '\n').encode('utf-8'))
+                f.write(line)
+            f.write(u'\n')
+            f.write(self.body.replace(u'\r\n', u'\n'))
         if update:
             self.load()
             self.render()
