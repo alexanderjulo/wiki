@@ -6,7 +6,7 @@ import os
 import json
 import binascii
 import hashlib
-import fasteners
+from wiki import named_locks
 from functools import wraps
 
 from flask import current_app
@@ -18,6 +18,10 @@ class UserManager(object):
     """A very simple user Manager, that saves it's data as json."""
     def __init__(self, path):
         self.file = os.path.join(path, 'users.json')
+        lock_path = current_app.config.get(
+            'USER_LOCK_PATH',
+            os.path.join(current_app.config['CONTENT_DIR'], 'users.lock'))
+        named_locks.set_lock('user-lock', lock_path)
 
     def read(self):
         if not os.path.exists(self.file):
@@ -36,7 +40,7 @@ class UserManager(object):
         # atomically switch users file with the new one
         os.rename(tmp_file, self.file)
 
-    @fasteners.interprocess_locked(current_app.config.get('USER_LOCK_FILE'))
+    @named_locks.interprocess_lock('user-lock')
     def add_user(self, name, password,
                  active=True, roles=[], authentication_method=None):
         users = self.read()
@@ -72,7 +76,7 @@ class UserManager(object):
             return None
         return User(self, name, userdata)
 
-    @fasteners.interprocess_locked(current_app.config.get('USER_LOCK_FILE'))
+    @named_locks.interprocess_lock('user-lock')
     def delete_user(self, name):
         users = self.read()
         if not users.pop(name, False):
@@ -80,7 +84,7 @@ class UserManager(object):
         self.write(users)
         return True
 
-    @fasteners.interprocess_locked(current_app.config.get('USER_LOCK_FILE'))
+    @named_locks.interprocess_lock('user-lock')
     def update(self, name, userdata):
         data = self.read()
         data[name] = userdata
