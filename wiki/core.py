@@ -4,6 +4,7 @@
 """
 import os
 import re
+from collections import OrderedDict
 
 import markdown
 from flask import abort
@@ -95,8 +96,15 @@ class Processors(object):
         md = markdown.Markdown(['codehilite', 'fenced_code', 'meta', 'tables'])
         html = md.convert(self.content)
         phtml = self.post(html)
-        body = self.content.split('\n\n', 1)[1]
-        meta = md.Meta
+        # the markdown meta plugin does not retain the order of the
+        # entries, so we have to loop over the meta values a second
+        # time to put them into a dictionary in the correct order
+        metas, body = self.content.split('\n\n', 1)
+        markdown_meta = md.Meta
+        meta = OrderedDict()
+        for line in metas.split('\n'):
+            key = line.split(':', 1)[0]
+            meta[key.lower()] = markdown_meta[key.lower()]
         return phtml, body, meta
 
 
@@ -104,7 +112,7 @@ class Page(object):
     def __init__(self, path, url, new=False):
         self.path = path
         self.url = url
-        self._meta = {}
+        self._meta = OrderedDict()
         if not new:
             self.load()
             self.render()
