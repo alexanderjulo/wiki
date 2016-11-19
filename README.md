@@ -17,45 +17,34 @@ but found nothing, I just wrote this down. I hope that it might help others ,too
 	* use your favorite editor
 	* sync with dropbox
 	* and many more
-* easily themable
 
 ### Planned
 
+* Re-introduce support for customizing the theme
 * Speed Improvements
 	* Code Optimizations
 	* Caching
-* Wikilinks-Support
-* Access protection (for private wikis or to limit edits to a known group)
 * Settings via the webinterface
+* Python2 & 3 compatibility.
 
 
 ## Setup
-Just clone this repository, cd into it, run `pip install -r requirements.txt`
-and create `content/` in the root directory with a `config.py` in it,
-that contains at least the following:
+You can install wiki using:
+
+	pip install wiki2
+
+
+Afterwards you can create or change into your content directory and create a `config.py` file in it, that contains at least the following:
 
 	# encoding: <your encoding (probably utf-8)
 	SECRET_KEY='a unique and long key'
 	TITLE='Wiki' # Title Optional
 
-## Start
-Afterwards just run the app however you want. I personally recommend something
-like gunicorn:
-	
-	gunicorn app:app
+## Usage
+Afterwards you can just run `wiki web` in your content directory to start the server.
 
-You can install `setproctitle` with pip to get meaningful process names.
-
-If you just want to try something out or debug something, you can execute
-the app with `python app.py` which will run the development server in debug
-mode. Have fun.
-
-## Theming
-The templates are based on jinja2. I used
-[bootstrap](http://twitter.github.com/bootstrap/) for the design.
-If you want to change the overall design, you should edit `templates/base.html`
-and/or `static/bootstrap.css`. If you do not like specific parts of the site,
-it should be fairly easy to find the equivalent template and edit it.
+## Development
+If you plan on helping with the development of this project you can clone the repository, open the newly created directory in a terminal and run `pip install -e .`, after which both the tests and the wiki cli will be available to you.
 
 ## Contributors
 

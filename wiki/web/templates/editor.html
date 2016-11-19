@@ -21,7 +21,7 @@ Wiki Editor
           <a class="btn" href="#preview" id="previewbtn">Preview</a>
         </div>
 				<div class="pull-right">
-          <a class="btn" href="{{ url_for('display', url=page.url) }}">Cancel</a>
+          <a class="btn" href="{{ url_for('wiki.display', url=page.url) }}">Cancel</a>
 					<button class="btn btn-success" type="submit">Save</button>
 				</div>
 			</div>
@@ -65,7 +65,7 @@ $('#previewlink').on('click', function() {
   $inputs.prop('disabled', true);
   $pre.removeClass('alert').removeClass('alert-error').html("Loading...");
   $.ajax({
-    url: "{{ url_for('preview') }}",
+    url: "{{ url_for('wiki.preview') }}",
     type: "POST",
     data: { body: bodycontent },
     success: function(msg) {
