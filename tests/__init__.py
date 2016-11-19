@@ -1,8 +1,9 @@
+from io import open
 import os
-from unittest import TestCase
+import shutil
 from tempfile import mkdtemp
 from tempfile import mkstemp
-import shutil
+from unittest import TestCase
 
 from wiki.core import Wiki
 
@@ -52,8 +53,8 @@ class WikiBaseTestCase(TestCase):
             folder = self.rootdir
 
         path = os.path.join(folder, name)
-        with open(path, 'w') as fhd:
-            fhd.write(content.encode("UTF-8"))
+        with open(path, 'w', encoding='utf-8') as fhd:
+            fhd.write(content)
 
         return path
 

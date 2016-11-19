@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from io import open
+
 from wiki.core import Page
 
 from . import WikiBaseTestCase
@@ -34,8 +36,8 @@ class PageTestCase(WikiBaseTestCase):
 
     def test_page_saving(self):
         self.page.save()
-        with open(self.page_path, 'rU') as fhd:
-            saved = fhd.read().decode("UTF-8")
+        with open(self.page_path, 'r', encoding='utf-8') as fhd:
+            saved = fhd.read()
         assert saved == self.page_content
 
 
