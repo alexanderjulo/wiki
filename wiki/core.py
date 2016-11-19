@@ -2,13 +2,13 @@
     Wiki core
     ~~~~~~~~~
 """
+from collections import OrderedDict
 from io import open
 import os
 import re
-from collections import OrderedDict
 
-import markdown
 from flask import abort
+import markdown
 
 
 class Processors(object):
