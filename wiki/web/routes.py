@@ -92,7 +92,7 @@ def move(url):
     if form.validate_on_submit():
         newurl = form.url.data
         current_wiki.move(url, newurl)
-        return redirect(url_for('wiki..display', url=newurl))
+        return redirect(url_for('wiki.display', url=newurl))
     return render_template('move.html', form=form, page=page)
 
 
