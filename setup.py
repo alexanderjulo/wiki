@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='wiki2',
-    version='2.0.0',
+    version='2.0.1',
     description='simple python markdown wiki with web ui',
     author='Alexander Jung-Loddenkemper',
     author_email='alexander@julo.ch',
