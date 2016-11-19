@@ -9,6 +9,9 @@ from werkzeug.local import LocalProxy
 from wiki.core import Wiki
 from wiki.web.user import UserManager
 
+class WikiError(Exception):
+    pass
+
 def get_wiki():
     wiki = getattr(g, '_wiki', None)
     if wiki is None:
@@ -35,12 +38,12 @@ def create_app(directory):
             os.path.join(app.config.get('CONTENT_DIR'), 'config.py')
         )
     except IOError:
-        print ("Startup Failure: You need to place a "
-               "config.py in your content directory.")
+        msg = "You need to place a config.py in your content directory."
+        raise WikiError(msg)
 
     loginmanager.init_app(app)
 
-    from .routes import bp
+    from wiki.web.routes import bp
     app.register_blueprint(bp)
 
     return app
