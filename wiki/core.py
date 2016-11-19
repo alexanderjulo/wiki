@@ -104,7 +104,9 @@ class Processors(object):
         meta = OrderedDict()
         for line in metas.split('\n'):
             key = line.split(':', 1)[0]
-            meta[key.lower()] = markdown_meta[key.lower()]
+            # markdown metadata always returns a list of lines, we will reverse
+            # that here
+            meta[key.lower()] = '\n'.join(markdown_meta[key.lower()])
         return phtml, body, meta
 
 
@@ -144,11 +146,7 @@ class Page(object):
         return self._meta
 
     def __getitem__(self, name):
-        item = self._meta[name]
-        if len(item) == 1:
-            return item[0]
-        print item
-        return item
+        return self._meta[name]
 
     def __setitem__(self, name, value):
         self._meta[name] = value
@@ -237,7 +235,6 @@ class Wiki(object):
         path = self.path(url)
         if not self.exists(url):
             return False
-        print path
         os.remove(path)
         return True
 
