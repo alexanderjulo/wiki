@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='wiki',
+    name='wiki2',
     version='2.0.0',
     description='simple python markdown wiki with web ui',
     author='Alexander Jung-Loddenkemper',
@@ -10,9 +10,9 @@ setup(
     packages=find_packages(),
     package_data={
         'wiki': [
-            'templates/*.html',
-            'static/*.js',
-            'static/*.css'
+            'wiki/web/templates/*.html',
+            'wiki/web/static/*.js',
+            'wiki/web/static/*.css'
         ],
     },
     install_requires=[

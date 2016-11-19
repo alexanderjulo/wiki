@@ -32,7 +32,7 @@ current_users = LocalProxy(get_users)
 def create_app(directory):
     app = Flask(__name__)
     app.config['CONTENT_DIR'] = directory
-    app.config['TITLE'] = 'wiki'
+    app.config['TITLE'] = u'wiki'
     try:
         app.config.from_pyfile(
             os.path.join(app.config.get('CONTENT_DIR'), 'config.py')
