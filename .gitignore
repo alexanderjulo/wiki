@@ -3,3 +3,4 @@ venv
 *.pyc
 *.sublime-*
 content/
+.DS_Store
