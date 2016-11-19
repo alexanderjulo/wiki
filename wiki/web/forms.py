@@ -2,21 +2,24 @@
     Forms
     ~~~~~
 """
-from flask import g, current_app
 from flask_wtf import Form
 from wtforms import BooleanField
 from wtforms import TextField
 from wtforms import TextAreaField
 from wtforms import PasswordField
 from wtforms.validators import InputRequired
-from wtforms.validaotrs import ValidationError
+from wtforms.validators import ValidationError
+
+from wiki.core import Processors
+from wiki.web import current_wiki
+from wiki.web import current_users
 
 
 class URLForm(Form):
     url = TextField('', [InputRequired()])
 
     def validate_url(form, field):
-        if g.wiki.exists(field.data):
+        if current_wiki.exists(field.data):
             raise ValidationError('The URL "%s" exists already.' % field.data)
 
     def clean_url(self, url):
@@ -27,7 +30,8 @@ class SearchForm(Form):
     term = TextField('', [InputRequired()])
     ignore_case = BooleanField(
         description='Ignore Case',
-        default=current_app.config.get('DEFAULT_SEARCH_IGNORE_CASE', True))
+        # FIXME: default is not correctly populated
+        default=True)
 
 
 class EditorForm(Form):
@@ -41,12 +45,12 @@ class LoginForm(Form):
     password = PasswordField('', [InputRequired()])
 
     def validate_name(form, field):
-        user = g.users.get_user(field.data)
+        user = current_users.get_user(field.data)
         if not user:
             raise ValidationError('This username does not exist.')
 
     def validate_password(form, field):
-        user = g.users.get_user(form.name.data)
+        user = current_users.get_user(form.name.data)
         if not user:
             return
         if not user.check_password(field.data):

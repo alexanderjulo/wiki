@@ -2,56 +2,79 @@
     Routes
     ~~~~~~
 """
+from flask import Blueprint
+from flask import flash
+from flask import redirect
+from flask import render_template
+from flask import request
+from flask import url_for
+from flask_login import current_user
+from flask_login import login_required
+from flask_login import login_user
+from flask_login import logout_user
+
+from wiki.core import Processors
+from wiki.web.forms import EditorForm
+from wiki.web.forms import LoginForm
+from wiki.web.forms import SearchForm
+from wiki.web.forms import URLForm
+from wiki.web import current_wiki
+from wiki.web import current_users
+from wiki.web.user import protect
 
 
-@app.route('/')
+bp = Blueprint('wiki', __name__)
+
+
+@bp.route('/')
 @protect
 def home():
-    page = wiki.get('home')
+    page = current_wiki.get('home')
     if page:
         return display('home')
     return render_template('home.html')
 
 
-@app.route('/index/')
+@bp.route('/index/')
 @protect
 def index():
-    pages = wiki.index()
+    pages = current_wiki.index()
     return render_template('index.html', pages=pages)
 
 
-@app.route('/<path:url>/')
+@bp.route('/<path:url>/')
 @protect
 def display(url):
-    page = wiki.get_or_404(url)
+    page = current_wiki.get_or_404(url)
     return render_template('page.html', page=page)
 
 
-@app.route('/create/', methods=['GET', 'POST'])
+@bp.route('/create/', methods=['GET', 'POST'])
 @protect
 def create():
     form = URLForm()
     if form.validate_on_submit():
-        return redirect(url_for('edit', url=form.clean_url(form.url.data)))
+        return redirect(url_for(
+            'wiki.edit', url=form.clean_url(form.url.data)))
     return render_template('create.html', form=form)
 
 
-@app.route('/edit/<path:url>/', methods=['GET', 'POST'])
+@bp.route('/edit/<path:url>/', methods=['GET', 'POST'])
 @protect
 def edit(url):
-    page = wiki.get(url)
+    page = current_wiki.get(url)
     form = EditorForm(obj=page)
     if form.validate_on_submit():
         if not page:
-            page = wiki.get_bare(url)
+            page = current_wiki.get_bare(url)
         form.populate_obj(page)
         page.save()
         flash('"%s" was saved.' % page.title, 'success')
-        return redirect(url_for('display', url=url))
+        return redirect(url_for('wiki.display', url=url))
     return render_template('editor.html', form=form, page=page)
 
 
-@app.route('/preview/', methods=['POST'])
+@bp.route('/preview/', methods=['POST'])
 @protect
 def preview():
     a = request.form
@@ -61,89 +84,89 @@ def preview():
     return data['html']
 
 
-@app.route('/move/<path:url>/', methods=['GET', 'POST'])
+@bp.route('/move/<path:url>/', methods=['GET', 'POST'])
 @protect
 def move(url):
-    page = wiki.get_or_404(url)
+    page = current_wiki.get_or_404(url)
     form = URLForm(obj=page)
     if form.validate_on_submit():
         newurl = form.url.data
-        wiki.move(url, newurl)
-        return redirect(url_for('.display', url=newurl))
+        current_wiki.move(url, newurl)
+        return redirect(url_for('wiki..display', url=newurl))
     return render_template('move.html', form=form, page=page)
 
 
-@app.route('/delete/<path:url>/')
+@bp.route('/delete/<path:url>/')
 @protect
 def delete(url):
-    page = wiki.get_or_404(url)
-    wiki.delete(url)
+    page = current_wiki.get_or_404(url)
+    current_wiki.delete(url)
     flash('Page "%s" was deleted.' % page.title, 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('wiki.home'))
 
 
-@app.route('/tags/')
+@bp.route('/tags/')
 @protect
 def tags():
-    tags = wiki.get_tags()
+    tags = current_wiki.get_tags()
     return render_template('tags.html', tags=tags)
 
 
-@app.route('/tag/<string:name>/')
+@bp.route('/tag/<string:name>/')
 @protect
 def tag(name):
-    tagged = wiki.index_by_tag(name)
+    tagged = current_wiki.index_by_tag(name)
     return render_template('tag.html', pages=tagged, tag=name)
 
 
-@app.route('/search/', methods=['GET', 'POST'])
+@bp.route('/search/', methods=['GET', 'POST'])
 @protect
 def search():
     form = SearchForm()
     if form.validate_on_submit():
-        results = wiki.search(form.term.data, form.ignore_case.data)
+        results = current_wiki.search(form.term.data, form.ignore_case.data)
         return render_template('search.html', form=form,
                                results=results, search=form.term.data)
     return render_template('search.html', form=form, search=None)
 
 
-@app.route('/user/login/', methods=['GET', 'POST'])
+@bp.route('/user/login/', methods=['GET', 'POST'])
 def user_login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = users.get_user(form.name.data)
+        user = current_users.get_user(form.name.data)
         login_user(user)
         user.set('authenticated', True)
         flash('Login successful.', 'success')
-        return redirect(request.args.get("next") or url_for('index'))
+        return redirect(request.args.get("next") or url_for('wiki.index'))
     return render_template('login.html', form=form)
 
 
-@app.route('/user/logout/')
+@bp.route('/user/logout/')
 @login_required
 def user_logout():
     current_user.set('authenticated', False)
     logout_user()
     flash('Logout successful.', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('wiki.index'))
 
 
-@app.route('/user/')
+@bp.route('/user/')
 def user_index():
     pass
 
 
-@app.route('/user/create/')
+@bp.route('/user/create/')
 def user_create():
     pass
 
 
-@app.route('/user/<int:user_id>/')
+@bp.route('/user/<int:user_id>/')
 def user_admin(user_id):
     pass
 
 
-@app.route('/user/delete/<int:user_id>/')
+@bp.route('/user/delete/<int:user_id>/')
 def user_delete(user_id):
     pass
 
@@ -154,6 +177,7 @@ def user_delete(user_id):
 """
 
 
-@app.errorhandler(404)
-def page_not_found(e):
+@bp.errorhandler(404)
+def page_not_found(error):
     return render_template('404.html'), 404
+
