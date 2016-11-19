@@ -20,32 +20,42 @@ class WikiBaseTestCase(TestCase):
     #: The contents of the ``config.py`` file.
     config_content = CONFIGURATION
 
+    _wiki = None
+
     def setUp(self):
         """
             Creates a content directory for the wiki to use
             and adds a configuration file with some example content.
-
-            Following that it will create a wiki instance as
-            ``self.wiki`` using the created directory.
         """
         self.rootdir = mkdtemp()
         self.create_file(u'config.py', self.config_content)
-        self.wiki = Wiki(self.rootdir)
+
+    @property
+    def wiki(self):
+        if not self._wiki:
+            self._wiki = Wiki(self.rootdir)
+        return self._wiki
 
     def create_file(self, name, content=u'', folder=None):
         """
             Easy way to create a file.
 
-            :param str name: the name of the file to create
-            :param str content: content of the file (optional)
-            :param str folder: the folder where the file should be
+            :param unicode name: the name of the file to create
+            :param unicode content: content of the file (optional)
+            :param unicode folder: the folder where the file should be
                 created, defaults to the temporary directory
+
+            :returns: the absolute path of the newly created file
+            :rtype: unicode
         """
         if folder is None:
             folder = self.rootdir
 
-        with open(os.path.join(folder, name), 'w') as fhd:
-            fhd.write(content)
+        path = os.path.join(folder, name)
+        with open(path, 'w') as fhd:
+            fhd.write(content.encode("UTF-8"))
+
+        return path
 
 
     def tearDown(self):
