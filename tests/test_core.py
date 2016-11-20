@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from io import open
+import os
 from unittest import TestCase
 
 from wiki.core import clean_url
@@ -231,3 +232,26 @@ class WikiTestCase(WikiBaseTestCase):
         # tests without having to worry about anything
         assert self.wiki.exists('config') is False
         assert self.wiki.exists('config.py') is False
+
+    def test_delete(self):
+        """
+            Assert deleting a URL will delete the file.
+        """
+        self.create_file('test.md')
+        self.wiki.delete("test")
+        assert not os.path.exists(os.path.join(self.rootdir, 'test.md'))
+
+    def test_index(self):
+        """
+            Assert index correctly lists all the files.
+        """
+        self.create_file('test.md', PAGE_CONTENT)
+        self.create_file('one/two/three.md', PAGE_CONTENT)
+        pages = self.wiki.index()
+        assert len(pages) == 2
+
+        deeptestpage = pages[0]
+        assert deeptestpage.url == 'one/two/three'
+
+        testpage = pages[1]
+        assert testpage.url == 'test'
