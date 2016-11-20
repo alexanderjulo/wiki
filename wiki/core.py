@@ -173,6 +173,9 @@ class Page(object):
             self.load()
             self.render()
 
+    def __repr__(self):
+        return u"<Page: {}@{}>".format(self.url, self.path)
+
     def load(self):
         with open(self.path, 'r', encoding='utf-8') as f:
             self.content = f.read()
