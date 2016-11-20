@@ -53,6 +53,10 @@ class WikiBaseTestCase(TestCase):
             folder = self.rootdir
 
         path = os.path.join(folder, name)
+
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
         with open(path, 'w', encoding='utf-8') as fhd:
             fhd.write(content)
 
