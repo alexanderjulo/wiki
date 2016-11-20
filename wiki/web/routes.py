@@ -13,7 +13,7 @@ from flask_login import login_required
 from flask_login import login_user
 from flask_login import logout_user
 
-from wiki.core import Processors
+from wiki.core import Processor
 from wiki.web.forms import EditorForm
 from wiki.web.forms import LoginForm
 from wiki.web.forms import SearchForm
@@ -77,10 +77,9 @@ def edit(url):
 @bp.route('/preview/', methods=['POST'])
 @protect
 def preview():
-    a = request.form
     data = {}
-    processed = Processors(a['body'])
-    data['html'], data['body'], data['meta'] = processed.out()
+    processor = Processor(request.form['body'])
+    data['html'], data['body'], data['meta'] = processor.process()
     return data['html']
 
 
