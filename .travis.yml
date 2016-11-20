@@ -8,3 +8,6 @@ python:
 install: "python setup.py develop"
 # command to run tests
 script: "python setup.py test"
+# disable notification emails
+notifications:
+  email: false
