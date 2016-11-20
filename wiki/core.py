@@ -8,107 +8,160 @@ import os
 import re
 
 from flask import abort
+from flask import url_for
 import markdown
 
 
-class Processors(object):
-    """This class is collection of processors for various content items.
+def clean_url(url):
     """
-    def __init__(self, content=""):
-        """Initialization function.  Runs Processors().pre() on content.
+        Cleans the url and corrects various errors. Removes multiple
+        spaces and all leading and trailing spaces. Changes spaces
+        to underscores and makes all characters lowercase. Also
+        takes care of Windows style folders use.
 
-        Args:
-            None
+        :param str url: the url to clean
 
-        Kwargs:
-            content (str): Preprocessed content directly from the file or
-            textarea.
+
+        :returns: the cleaned url
+        :rtype: str
+    """
+    url = re.sub('[ ]{2,}', ' ', url).strip()
+    url = url.lower().replace(' ', '_')
+    url = url.replace('\\\\', '/').replace('\\', '/')
+    return url
+
+
+def wikilink(text, url_formatter=None):
+    """
+        Processes Wikilink syntax "[[Link]]" within the html body.
+        This is intended to be run after content has been processed
+        by markdown and is already HTML.
+
+        :param str text: the html to highlight wiki links in.
+        :param function url_formatter: which URL formatter to use,
+            will by default use the flask url formatter
+
+        Syntax:
+            This accepts Wikilink syntax in the form of [[WikiLink]] or
+            [[url/location|LinkName]]. Everything is referenced from the
+            base location "/", therefore sub-pages need to use the
+            [[page/subpage|Subpage]].
+
+        :returns: the processed html
+        :rtype: str
+    """
+    if url_formatter is None:
+        url_formatter = url_for
+    link_regex = re.compile(
+        r"((?<!\<code\>)\[\[([^<].+?) \s*([|] \s* (.+?) \s*)?]])",
+        re.X | re.U
+    )
+    for i in link_regex.findall(text):
+        title = [i[-1] if i[-1] else i[1]][0]
+        url = clean_url(i[1])
+        html_url = u"<a href='{0}'>{1}</a>".format(
+            url_formatter('display', url=url),
+            title
+        )
+        text = re.sub(link_regex, html_url, text, count=1)
+    return text
+
+
+class Processor(object):
+    """
+        The processor handles the processing of file content into
+        metadata and markdown and takes care of the rendering.
+
+        It also offers some helper methods that can be used for various
+        cases.
+    """
+
+    preprocessors = []
+    postprocessors = [wikilink]
+
+    def __init__(self, text):
         """
-        self.content = self.pre(content)
+            Initialization of the processor.
 
-    def wikilink(self, html):
-        """Processes Wikilink syntax "[[Link]]" within content body.  This is
-        intended to be run after the content has been processed by Markdown.
-
-        Args:
-            html (str): Post-processed HTML output from Markdown
-
-        Kwargs:
-            None
-
-        Syntax: This accepts Wikilink syntax in the form of [[WikiLink]] or
-        [[url/location|LinkName]].  Everything is referenced from the base
-        location "/", therefore sub-pages need to use the
-        [[page/subpage|Subpage]].
+            :param str text: the text to process
         """
-        link = r"((?<!\<code\>)\[\[([^<].+?) \s*([|] \s* (.+?) \s*)?]])"
-        compLink = re.compile(link, re.X | re.U)
-        for i in compLink.findall(html):
-            title = [i[-1] if i[-1] else i[1]][0]
-            url = self.clean_url(i[1])
-            formattedLink = u"<a href='{0}'>{1}</a>".format(url_for('display', url=url), title)
-            html = re.sub(compLink, formattedLink, html, count=1)
-        return html
+        self.md = markdown.Markdown([
+            'codehilite',
+            'fenced_code',
+            'meta',
+            'tables'
+        ])
+        self.input = text
+        self.markdown = None
+        self.meta_raw = None
 
-    def clean_url(self, url):
-        """Cleans the url and corrects various errors.  Removes multiple spaces
-        and all leading and trailing spaces.  Changes spaces to underscores and
-        makes all characters lowercase.  Also takes care of Windows style
-        folders use.
+        self.pre = None
+        self.html = None
+        self.final = None
+        self.meta = None
 
-        Args:
-            url (str): URL link
-
-        Kwargs:
-            None
+    def process_pre(self):
         """
-        pageStub = re.sub('[ ]{2,}', ' ', url).strip()
-        pageStub = pageStub.lower().replace(' ', '_')
-        pageStub = pageStub.replace('\\\\', '/').replace('\\', '/')
-        return pageStub
-
-    def pre(self, content):
-        """Content preprocessor.  This currently does nothing.
-
-        Args:
-            content (str): Preprocessed content directly from the file or
-            textarea.
-
-        Kwargs:
-            None
+            Content preprocessor.
         """
-        return content
+        current = self.input
+        for processor in self.preprocessors:
+            current = processor(current)
+        self.pre = current
 
-    def post(self, html):
-        """Content post-processor.
-
-        Args:
-            html (str): Post-processed HTML output from Markdown
-
-        Kwargs:
-            None
+    def process_markdown(self):
         """
-        return self.wikilink(html)
-
-    def out(self):
-        """Final content output.  Processes the Markdown, post-processes, and
-        Meta data.
+            Convert to HTML.
         """
-        md = markdown.Markdown(['codehilite', 'fenced_code', 'meta', 'tables'])
-        html = md.convert(self.content)
-        phtml = self.post(html)
+        self.html = self.md.convert(self.pre)
+
+
+    def split_raw(self):
+        """
+            Split text into raw meta and content.
+        """
+        self.meta_raw, self.markdown = self.pre.split('\n\n', 1)
+
+    def process_meta(self):
+        """
+            Get metadata.
+
+            .. warning:: Can only be called after :meth:`html` was
+                called.
+        """
         # the markdown meta plugin does not retain the order of the
         # entries, so we have to loop over the meta values a second
         # time to put them into a dictionary in the correct order
-        metas, body = self.content.split('\n\n', 1)
-        markdown_meta = md.Meta
-        meta = OrderedDict()
-        for line in metas.split('\n'):
+        self.meta = OrderedDict()
+        for line in self.meta_raw.split('\n'):
             key = line.split(':', 1)[0]
-            # markdown metadata always returns a list of lines, we will reverse
-            # that here
-            meta[key.lower()] = '\n'.join(markdown_meta[key.lower()])
-        return phtml, body, meta
+            # markdown metadata always returns a list of lines, we will
+            # reverse that here
+            self.meta[key.lower()] = \
+                '\n'.join(self.md.Meta[key.lower()])
+
+    def process_post(self):
+        """
+            Content postprocessor.
+        """
+        current = self.html
+        for processor in self.postprocessors:
+            current = processor(current)
+        self.final = current
+
+    def process(self):
+        """
+            Runs the full suite of processing on the given text, all
+            pre and post processing, markdown rendering and meta data
+            handling.
+        """
+        self.process_pre()
+        self.process_markdown()
+        self.split_raw()
+        self.process_meta()
+        self.process_post()
+
+        return self.final, self.markdown, self.meta
 
 
 class Page(object):
@@ -125,8 +178,8 @@ class Page(object):
             self.content = f.read()
 
     def render(self):
-        processed = Processors(self.content)
-        self._html, self.body, self._meta = processed.out()
+        processor = Processor(self.content)
+        self._html, self.body, self._meta = processor.process()
 
     def save(self, update=True):
         folder = os.path.dirname(self.path)

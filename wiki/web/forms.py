@@ -10,7 +10,7 @@ from wtforms import PasswordField
 from wtforms.validators import InputRequired
 from wtforms.validators import ValidationError
 
-from wiki.core import Processors
+from wiki.core import clean_url
 from wiki.web import current_wiki
 from wiki.web import current_users
 
@@ -23,7 +23,7 @@ class URLForm(Form):
             raise ValidationError('The URL "%s" exists already.' % field.data)
 
     def clean_url(self, url):
-        return Processors().clean_url(url)
+        return clean_url(url)
 
 
 class SearchForm(Form):
