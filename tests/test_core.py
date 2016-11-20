@@ -146,8 +146,8 @@ class ProcessorTestCase(WikiBaseTestCase):
         assert html == CONTENT_HTML
         assert original == PAGE_CONTENT.split(u'\n\n', 1)[1]
         assert meta == {
-            'title': 'Test',
-            'tags': 'one, two, 3, jö'
+            'title': u'Test',
+            'tags': u'one, two, 3, jö'
         }
 
     def test_process_wikilinks(self):
