@@ -19,7 +19,8 @@ init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
 
 install:
-  - "%PYTHON%/Scripts/python.exe setup.py develop"
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python setup.py develop"
 
 test_script:
-  - "%PYTHON%/Scripts/python.exe setup.py test"
+  - "python setup.py test"
