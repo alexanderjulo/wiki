@@ -6,6 +6,7 @@ from tempfile import mkstemp
 from unittest import TestCase
 
 from wiki.core import Wiki
+from wiki.web import create_app
 
 #: the default configuration
 CONFIGURATION = u"""
@@ -27,6 +28,7 @@ class WikiBaseTestCase(TestCase):
             and adds a configuration file with some example content.
         """
         self._wiki = None
+        self._app = None
         self.rootdir = mkdtemp()
         self.create_file(u'config.py', self.config_content)
 
@@ -35,6 +37,12 @@ class WikiBaseTestCase(TestCase):
         if not self._wiki:
             self._wiki = Wiki(self.rootdir)
         return self._wiki
+
+    @property
+    def app(self):
+        if not self._app:
+            self._app = create_app(self.rootdir).test_client()
+        return self._app
 
     def create_file(self, name, content=u'', folder=None):
         """
