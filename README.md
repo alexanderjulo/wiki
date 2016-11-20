@@ -1,6 +1,7 @@
 # Readme
 
-[![Build Status](https://travis-ci.org/alexanderjulo/wiki.svg?branch=master)](https://travis-ci.org/alexanderjulo/wiki)
+[![Linux build status](https://travis-ci.org/alexanderjulo/wiki.svg?branch=master)](https://travis-ci.org/alexanderjulo/wiki)
+[![Windows build status](https://ci.appveyor.com/api/projects/status/n4gh7bbf93fiixew/branch/master?svg=true)](https://ci.appveyor.com/project/alexanderjulo/wiki/branch/master)
 
 ## About
 As I wanted a wiki that just uses plain markdown files as backend, that is easy
