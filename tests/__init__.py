@@ -21,13 +21,12 @@ class WikiBaseTestCase(TestCase):
     #: The contents of the ``config.py`` file.
     config_content = CONFIGURATION
 
-    _wiki = None
-
     def setUp(self):
         """
             Creates a content directory for the wiki to use
             and adds a configuration file with some example content.
         """
+        self._wiki = None
         self.rootdir = mkdtemp()
         self.create_file(u'config.py', self.config_content)
 
