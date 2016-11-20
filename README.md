@@ -1,5 +1,7 @@
 # Readme
 
+[![Build Status](https://travis-ci.org/alexanderjulo/wiki.svg?branch=master)](https://travis-ci.org/alexanderjulo/wiki)
+
 ## About
 As I wanted a wiki that just uses plain markdown files as backend, that is easy
 to use and that is written in python, to enable me to easily hack around,
