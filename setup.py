@@ -26,7 +26,7 @@ setup(
         'Werkzeug>=0.8.3'
     ],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'mock'],
     entry_points={
         'console_scripts': [
             'wiki=wiki.cli:main'
