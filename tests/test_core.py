@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from io import open
+from mock import patch
 import os
 from unittest import TestCase
 
@@ -27,7 +28,7 @@ CONTENT_HTML = u"""\
 
 
 WIKILINK_PAGE_CONTENT = u"""\
-title: test
+title: link
 
 [[target]]
 """
@@ -54,6 +55,15 @@ def wikilink_simple_url_formatter(text):
         :param str text: the text to format.
     """
     return wikilink(text, simple_url_formatter)
+
+
+class SimpleWikilinkProcessor(Processor):
+    """
+        As the processor can currently not take arguments for
+        preprocessors we need to temporarily subclass it to
+        overwrite it with the simple URL formatter.
+    """
+    postprocessors = [wikilink_simple_url_formatter]
 
 
 class URLCleanerTestCase(TestCase):
@@ -155,12 +165,6 @@ class ProcessorTestCase(WikiBaseTestCase):
         """
             Assert that wikilinks are processed correctly.
         """
-        # as the processor can currently not take arguments for
-        # preprocessors we need to temporarily subclass it to
-        # overwrite it with the simple URL formatter
-        class SimpleWikilinkProcessor(Processor):
-            postprocessors = [wikilink_simple_url_formatter]
-
         self.processor = SimpleWikilinkProcessor(WIKILINK_PAGE_CONTENT)
         html, _, _ = self.processor.process()
         assert html == WIKILINK_CONTENT_HTML
@@ -246,10 +250,14 @@ class WikiTestCase(WikiBaseTestCase):
             Assert index correctly lists all the files.
         """
         self.create_file('test.md', PAGE_CONTENT)
-        self.create_file('one/two/three.md', PAGE_CONTENT)
-        pages = self.wiki.index()
+        self.create_file('one/two/three.md', WIKILINK_PAGE_CONTENT)
+        with patch('wiki.core.Processor', new=SimpleWikilinkProcessor):
+            pages = self.wiki.index()
         assert len(pages) == 2
 
+        # as the index return should be sorted by the title
+        # the first page should always be the link one and the other
+        # one the second
         deeptestpage = pages[0]
         assert deeptestpage.url == 'one/two/three'
 
