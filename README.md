@@ -2,6 +2,7 @@
 
 [![Linux build status](https://travis-ci.org/alexanderjulo/wiki.svg?branch=master)](https://travis-ci.org/alexanderjulo/wiki)
 [![Windows build status](https://ci.appveyor.com/api/projects/status/n4gh7bbf93fiixew/branch/master?svg=true)](https://ci.appveyor.com/project/alexanderjulo/wiki/branch/master)
+[![Join the chat at https://gitter.im/gitterHQ/gitterHQ.github.io](https://badges.gitter.im/gitterHQ/gitterHQ.github.io.svg)](https://gitter.im/wiki/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## About
 As I wanted a wiki that just uses plain markdown files as backend, that is easy
