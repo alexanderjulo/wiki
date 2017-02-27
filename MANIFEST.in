@@ -1,0 +1,3 @@
+recursive-include wiki/web/templates *.html
+recursive-include wiki/web/static *.js
+recursive-include wiki/web/static *.css
