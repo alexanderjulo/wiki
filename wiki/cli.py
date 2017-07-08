@@ -26,7 +26,7 @@ def main(ctx, directory):
 
 @main.command()
 @click.option('--debug/--no-debug', envvar='WIKI_DEBUG', default=False)
-@click.option('--host', default='')
+@click.option('--host', default=None)
 @click.pass_context
 def web(ctx, debug):
     """
