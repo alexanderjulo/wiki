@@ -4,8 +4,9 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
 # command to install dependencies
-install: "python setup.py develop"
+install: "pip install --upgrade pip setuptools wheel && python setup.py develop"
 # command to run tests
 script: "python setup.py test"
 # disable notification emails
