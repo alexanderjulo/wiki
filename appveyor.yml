@@ -27,7 +27,7 @@ init:
 
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "pip install --upgrade pip setuptools wheel && python setup.py develop"
+  - "pip install --upgrade setuptools wheel && python setup.py develop"
 
 test_script:
   - "python setup.py test"
