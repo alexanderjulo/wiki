@@ -6,6 +6,7 @@ import os
 import json
 import binascii
 import hashlib
+from wiki import named_locks
 from functools import wraps
 
 from flask import current_app
@@ -17,6 +18,10 @@ class UserManager(object):
     """A very simple user Manager, that saves it's data as json."""
     def __init__(self, path):
         self.file = os.path.join(path, 'users.json')
+        lock_path = current_app.config.get(
+            'USER_LOCK_PATH',
+            os.path.join(current_app.config['CONTENT_DIR'], 'users.lock'))
+        named_locks.set_lock('user-lock', lock_path)
 
     def read(self):
         if not os.path.exists(self.file):
@@ -26,9 +31,16 @@ class UserManager(object):
         return data
 
     def write(self, data):
-        with open(self.file, 'w') as f:
+        # prepare new users file content in tmp file
+        tmp_file = self.file + '-write'
+        with open(tmp_file, 'w') as f:
             f.write(json.dumps(data, indent=2))
+            f.flush()
+            os.fsync(f.fileno())
+        # atomically switch users file with the new one
+        os.rename(tmp_file, self.file)
 
+    @named_locks.interprocess_lock('user-lock')
     def add_user(self, name, password,
                  active=True, roles=[], authentication_method=None):
         users = self.read()
@@ -57,12 +69,14 @@ class UserManager(object):
         return User(self, name, userdata)
 
     def get_user(self, name):
+        # no locking is made as the self.write() is atomic by rename operation
         users = self.read()
         userdata = users.get(name)
         if not userdata:
             return None
         return User(self, name, userdata)
 
+    @named_locks.interprocess_lock('user-lock')
     def delete_user(self, name):
         users = self.read()
         if not users.pop(name, False):
@@ -70,6 +84,7 @@ class UserManager(object):
         self.write(users)
         return True
 
+    @named_locks.interprocess_lock('user-lock')
     def update(self, name, userdata):
         data = self.read()
         data[name] = userdata
