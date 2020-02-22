@@ -29,7 +29,6 @@ but found nothing, I just wrote this down. I hope that it might help others ,too
 	* Code Optimizations
 	* Caching
 * Settings via the webinterface
-* Python2 & 3 compatibility.
 
 
 ## Setup
