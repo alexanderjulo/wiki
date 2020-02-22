@@ -2,7 +2,7 @@
     Forms
     ~~~~~
 """
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import BooleanField
 from wtforms import TextField
 from wtforms import TextAreaField
@@ -15,7 +15,7 @@ from wiki.web import current_wiki
 from wiki.web import current_users
 
 
-class URLForm(Form):
+class URLForm(FlaskForm):
     url = TextField('', [InputRequired()])
 
     def validate_url(form, field):
@@ -26,7 +26,7 @@ class URLForm(Form):
         return clean_url(url)
 
 
-class SearchForm(Form):
+class SearchForm(FlaskForm):
     term = TextField('', [InputRequired()])
     ignore_case = BooleanField(
         description='Ignore Case',
@@ -34,13 +34,13 @@ class SearchForm(Form):
         default=True)
 
 
-class EditorForm(Form):
+class EditorForm(FlaskForm):
     title = TextField('', [InputRequired()])
     body = TextAreaField('', [InputRequired()])
     tags = TextField('')
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     name = TextField('', [InputRequired()])
     password = PasswordField('', [InputRequired()])
 
