@@ -12,6 +12,7 @@ setup(
     url='https://github.com/alexanderjulo/wiki',
     packages=find_packages(),
     include_package_data=True,
+    python_requires='>3.7'
     install_requires=[
         'Flask>=0.9',
         'Click>=6,<7',
