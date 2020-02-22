@@ -85,7 +85,7 @@ class Processor(object):
 
             :param str text: the text to process
         """
-        self.md = markdown.Markdown([
+        self.md = markdown.Markdown(extensions=[
             'codehilite',
             'fenced_code',
             'meta',
