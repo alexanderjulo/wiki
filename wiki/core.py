@@ -12,6 +12,13 @@ from flask import url_for
 import markdown
 
 
+class InvalidFileException(Exception):
+    """
+        This exception is raised when wiki encounters a
+        markdown file that it cannot handle.
+    """
+
+
 def clean_url(url):
     """
         Cleans the url and corrects various errors. Removes multiple
@@ -182,7 +189,10 @@ class Page(object):
 
     def render(self):
         processor = Processor(self.content)
-        self._html, self.body, self._meta = processor.process()
+        try:
+            self._html, self.body, self._meta = processor.process()
+        except ValueError:
+            raise InvalidFileException("No metadata & body.")
 
     def save(self, update=True):
         folder = os.path.dirname(self.path)
@@ -313,8 +323,13 @@ class Wiki(object):
                 path = os.path.join(cur_dir, cur_file)
                 if cur_file.endswith('.md'):
                     url = clean_url(os.path.join(cur_dir_url, cur_file[:-3]))
-                    page = Page(path, url)
-                    pages.append(page)
+                    try:
+                        page = Page(path, url)
+                        pages.append(page)
+                    except InvalidFileException:
+                        # for now we just ignore files that are invalid
+                        # entirely
+                        pass
         return sorted(pages, key=lambda x: x.title.lower())
 
     def index_by(self, key):

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 from io import open
-from mock import patch
-import os
 from unittest import TestCase
+import os
+from mock import patch
 
+import pytest
+
+from wiki.core import InvalidFileException
 from wiki.core import clean_url
 from wiki.core import wikilink
 from wiki.core import Page
@@ -19,6 +22,10 @@ tags: one, two, 3, jö
 Hello, how are you guys?
 
 **Is it not _magnificent_**?
+"""
+
+PAGE_CONTENT_INVALID = u"""\
+Hello, how are you guys?
 """
 
 
@@ -208,6 +215,28 @@ class PageTestCase(WikiBaseTestCase):
         assert saved == self.page_content
 
 
+class InvalidPageTestCase(WikiBaseTestCase):
+    """
+        Contains various tests for the :class:`~wiki.core.Page`
+        class, but with an invalid file.
+    """
+
+    page_content = PAGE_CONTENT_INVALID
+
+    def setUp(self):
+        super(InvalidPageTestCase, self).setUp()
+
+        self.page_path = self.create_file('test.md', self.page_content)
+
+
+    def test_page_loading_fails(self):
+        """
+            Assert that content is loaded correctly from disk.
+        """
+        with pytest.raises(InvalidFileException):
+            Page(self.page_path, 'test')
+
+
 class WikiTestCase(WikiBaseTestCase):
     """
         Contains various tests for the :class:`~wiki.core.Wiki`
@@ -251,6 +280,7 @@ class WikiTestCase(WikiBaseTestCase):
         """
         self.create_file('test.md', PAGE_CONTENT)
         self.create_file('one/two/three.md', WIKILINK_PAGE_CONTENT)
+        self.create_file('invalid.md', PAGE_CONTENT_INVALID)
         with patch('wiki.core.Processor', new=SimpleWikilinkProcessor):
             pages = self.wiki.index()
         assert len(pages) == 2
