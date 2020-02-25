@@ -5,7 +5,7 @@ print(find_packages())
 
 setup(
     name='wiki2',
-    version='3.0.1',
+    version='3.0.2',
     description='simple python markdown wiki with web ui',
     author='Alexander Jung-Loddenkemper',
     author_email='alexander@julo.ch',
