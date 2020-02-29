@@ -4,15 +4,14 @@
 """
 import os
 import json
-import binascii
-import hashlib
 from functools import wraps
 
 from flask import current_app
 from flask_login import current_user
+from flask_bcrypt import Bcrypt
 
 
-
+bcrypt = Bcrypt()
 class UserManager(object):
     """A very simple user Manager, that saves it's data as json."""
     def __init__(self, path):
@@ -121,22 +120,15 @@ class User(object):
 
 
 def get_default_authentication_method():
-    return current_app.config.get('DEFAULT_AUTHENTICATION_METHOD', 'cleartext')
+    return current_app.config.get('DEFAULT_AUTHENTICATION_METHOD', 'hash')
 
 
 def make_salted_hash(password, salt=None):
-    if not salt:
-        salt = os.urandom(64)
-    d = hashlib.sha512()
-    d.update(salt[:32])
-    d.update(password)
-    d.update(salt[32:])
-    return binascii.hexlify(salt) + d.hexdigest()
+    return bcrypt.generate_password_hash(password).decode('utf-8')
 
 
 def check_hashed_password(password, salted_hash):
-    salt = binascii.unhexlify(salted_hash[:128])
-    return make_salted_hash(password, salt) == salted_hash
+    return bcrypt.check_password_hash(salted_hash, password)
 
 
 def protect(f):

@@ -5,6 +5,19 @@
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='responsive.css') }}">
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='pygments.css') }}">
+		<script>
+			MathJax = {
+			  tex: {
+				inlineMath: [['$', '$'], ['\\(', '\\)']]
+			  },
+			  svg: {
+				fontCache: 'global'
+			  }
+			};
+		</script>
+		<script type="text/javascript" id="MathJax-script" async
+			src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+		</script>
 	</head>
 
 	<body>
@@ -26,10 +39,13 @@
 							</ul>
 
 							<ul class="nav pull-right">
-								{% if current_user.is_anonymous %}
-									<li><a href="{{ url_for('wiki.user_login') }}">Login</a></li>
-								{% else %}
+								{% if current_user.is_authenticated %}
 									<li><a href="{{ url_for('wiki.user_logout') }}">Logout</a></li>
+								{% else %}
+									<ul class="nav">
+									<li><a href="{{ url_for('wiki.user_login') }}">Login</a></li>
+									<li><a href="{{ url_for('wiki.user_create') }}">Register</a></li>
+									</ul>
 								{% endif %}
 							</ul>
 						</div>
