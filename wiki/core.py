@@ -278,6 +278,7 @@ class Wiki(object):
         return Page(path, url, new=True)
 
     def move(self, url, newurl):
+        newurl = clean_url(newurl)
         source = os.path.join(self.root, url) + '.md'
         target = os.path.join(self.root, newurl) + '.md'
         # normalize root path (just in case somebody defined it absolute,
@@ -297,6 +298,7 @@ class Wiki(object):
         if not os.path.exists(folder):
             os.makedirs(folder)
         os.rename(source, target)
+        return newurl
 
     def delete(self, url):
         path = self.path(url)
