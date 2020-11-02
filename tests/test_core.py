@@ -293,3 +293,17 @@ class WikiTestCase(WikiBaseTestCase):
 
         testpage = pages[1]
         assert testpage.url == 'test'
+
+    def test_move(self):
+        """
+            Assert that pages are moved correctly, including URL sanitization.
+        """
+        self.create_file('test.md')
+        assert self.wiki.move('test', 'newtest') == 'newtest'
+        assert self.wiki.exists('newtest')
+        assert not self.wiki.exists('test')
+
+        self.create_file('test_2.md')
+        assert self.wiki.move('test_2', 'Test 3') == "test_3"
+        assert self.wiki.exists('test_3')
+        assert not self.wiki.exists('test_2')
