@@ -10,12 +10,12 @@
 
 {% block content %}
 <div class="row">
-	<div class="span8 offset1">
+	<div class="col-lg-offset-1 col-sm-8 col-md-8">
 		<form class="form-inline well" method="POST">
 			{{ form.hidden_tag() }}
 			{{ form.term(placeholder='Search for.. (regex accepted)', autocomplete="off") }}
             {{ form.ignore_case() }} Ignore Case
-			<input type="submit" class="btn btn-success pull-right" value="Search!">
+			<input type="submit" class="btn btn-success pull-right form-control" value="Search!">
 		</form>
 	</div>
 </div>

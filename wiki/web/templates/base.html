@@ -1,20 +1,21 @@
-{% from "helpers.html" import input %}
-<!DOCTYPE html>
+<!doctype html>
 <html>
 	<head>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='responsive.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap3.css') }}">
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='pygments.css') }}">
+		<style>.content-wrap {	margin-top:60px; }</style>
 	</head>
-
 	<body>
-		<div class="navbar navbar-fixed-top">
-			<div class="navbar-inner">
+		{% from "helpers.html" import input %}
+		<div class="navbar navbar-fixed-top navbar-default">
+			<div class="container">
 				<div class="container">
 					<div class="row">
-						<div class="span12">
-							<a href="#" class="brand">{{ config.TITLE }}</a>
-							<ul class="nav">
+						<div class="col-sm-12 col-md-12"><div class="navbar-header">
+							<a href="#" class="navbar-brand">{{ config.TITLE }}</a>
+						</div>
+
+							<ul class="nav navbar-nav">
 								<li><a href="{{ url_for('wiki.home') }}">Home</a></li>
 								<li><a href="{{ url_for('wiki.index') }}">Index</a></li>
 								<li><a href="{{ url_for('wiki.tags') }}">Tags</a></li>
@@ -25,7 +26,7 @@
 								<li></li>
 							</ul>
 
-							<ul class="nav pull-right">
+							<ul class="nav pull-right navbar-nav">
 								{% if current_user.is_anonymous %}
 									<li><a href="{{ url_for('wiki.user_login') }}">Login</a></li>
 								{% else %}
@@ -38,9 +39,9 @@
 			</div>
 		</div>
 
-		<div class="container">
+		<div class="container content-wrap">
 			<div class="row">
-				<div class="span10 offset1">
+				<div class="col-lg-offset-1 col-sm-10 col-md-10">
 					{% block header %}
 						<div class="page-header">
 							<h1>{% block title %}{{ page.title }}{% endblock title %}</h1>
@@ -49,36 +50,31 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="span7 offset1">
+				<div class="col-lg-offset-1 col-sm-7 col-md-7">
 					{% with messages = get_flashed_messages(with_categories=True) %}
 						{% if messages %}
 							{% for category, message in messages %}
-								<div class="alert alert-{{ category }}">
-									<button type="button" class="close" data-dismiss="alert">&times;</button>
+								<div class="alert alert-{{ category }} alert-warning alert-dismissable">
+									<button type="button" class="close" data-dismiss="alert">×</button>
 									{{ message }}
 								</div>
 							{% endfor %}
 						{% endif %}
 					{% endwith %}
 					{% if form and form.errors %}
-						<div class="alert alert-error">Errors occured verifying your input. Please check the marked fields below.</div>
+						<div class="alert alert-error alert-warning">Errors occured verifying your input. Please check the marked fields below.</div>
 					{% endif %}
 					{% block content %}
 					{% endblock content %}
 				</div>
-				<div class="span3">
+				<div class="col-sm-3 col-md-3">
 					{% block sidebar %}
 					{% endblock sidebar %}
 				</div>
 			</div>
 		</div>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.0/jquery.min.js "></script>
-		<script type="text/javascript">
-			if (typeof jQuery == 'undefined') {
-				document.write(unescape("%3Cscript src='{{ url_for('static', filename='jquery.min.js') }}' type='text/javascript'%3E%3C/script%3E"));
-			}
-		</script>
-		<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='jquery3.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='bootstrap3.min.js') }}"></script>
 		<script type="text/javascript">
 			{% block postscripts %}
 			{% endblock postscripts %}

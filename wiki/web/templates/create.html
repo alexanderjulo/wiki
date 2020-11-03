@@ -3,9 +3,9 @@
 {% block title %}Create a new page{% endblock title %}
 {% block content %}
 <form method="POST" class="form-inline">
-	{{ form.hidden_tag() }}
-	{{ input(form.url, placeholder="URL of the new page", autocomplete="off") }}
-	<input type="submit" class="btn btn-success" value="Create">
+  {{ form.hidden_tag() }}
+  {{ input(form.url, placeholder="URL of the new page", autocomplete="off") }}
+  <input type="submit" class="btn btn-success form-control" value="Create">
 </form>
 {% endblock content %}
 

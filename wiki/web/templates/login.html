@@ -4,9 +4,9 @@
 
 {% block content %}
 <form class="form form-inline" method="POST">
-	{{ form.hidden_tag() }}
-	{{ form.name(placeholder='Username') }}
-	{{ form.password(placeholder='Password') }}
-	<input type="submit" class="btn btn-primary" value="Login">
+  {{ form.hidden_tag() }}
+  {{ form.name(placeholder='Username') }}
+  {{ form.password(placeholder='Password') }}
+  <input type="submit" class="btn btn-primary form-control" value="Login">
 </form>
 {% endblock content %}
