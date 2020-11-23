@@ -9,8 +9,3 @@ content/
 *.egg-info
 dist/
 .vscode/settings.json
-public/config.py
-public/users.json
-public/456.md
-public/brew.md
-public/recipe.md
