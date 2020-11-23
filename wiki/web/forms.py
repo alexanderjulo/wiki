@@ -9,6 +9,7 @@ from wtforms import TextAreaField
 from wtforms import PasswordField
 from wtforms.validators import InputRequired
 from wtforms.validators import ValidationError
+from wtforms.validators import EqualTo
 
 from wiki.core import clean_url
 from wiki.web import current_wiki
@@ -31,6 +32,7 @@ class SearchForm(FlaskForm):
     ignore_case = BooleanField(
         description='Ignore Case',
         # FIXME: default is not correctly populated
+        # A: code is fine, firefox have a bug and will not render checkbox properly
         default=True)
 
 
@@ -55,3 +57,14 @@ class LoginForm(FlaskForm):
             return
         if not user.check_password(field.data):
             raise ValidationError('Username and password do not match.')
+
+class RegistrationForm(FlaskForm):
+    name = TextField('Username', [InputRequired()])
+    password = PasswordField('Password', [InputRequired()])
+    password_confirm = PasswordField('Confirm Password', 
+                    validators=[InputRequired(), EqualTo('password')])
+
+    def validate_name(form, field):
+        user = current_users.get_user(form.name.data)
+        if user:
+            raise ValidationError('This username already exist.')

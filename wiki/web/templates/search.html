@@ -14,7 +14,7 @@
 		<form class="form-inline well" method="POST">
 			{{ form.hidden_tag() }}
 			{{ form.term(placeholder='Search for.. (regex accepted)', autocomplete="off") }}
-            {{ form.ignore_case() }} Ignore Case
+            {{ form.ignore_case() }} {{ form.ignore_case.label }}
 			<input type="submit" class="btn btn-success pull-right" value="Search!">
 		</form>
 	</div>
