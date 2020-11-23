@@ -96,7 +96,8 @@ class Processor(object):
             'codehilite',
             'fenced_code',
             'meta',
-            'tables'
+            'tables',
+            'mdx_math' # mathjax support
         ])
         self.input = text
         self.markdown = None

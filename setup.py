@@ -21,7 +21,8 @@ setup(
         'Markdown>=2.2.0',
         'Pygments>=1.5',
         'WTForms>=1.0.2',
-        'Werkzeug>=0.8.3'
+        'Werkzeug>=0.8.3',
+        'python-markdown-math'
     ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'mock'],
