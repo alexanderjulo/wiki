@@ -5,6 +5,19 @@
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='responsive.css') }}">
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='pygments.css') }}">
+		<script>
+			MathJax = {
+			  tex: {
+				inlineMath: [['$', '$'], ['\\(', '\\)']]
+			  },
+			  svg: {
+				fontCache: 'global'
+			  }
+			};
+ 		</script>
+ 		<script type="text/javascript" id="MathJax-script" async
+ 			src="{{ url_for('static', filename='tex-svg.js') }}">
+ 		</script>
 	</head>
 
 	<body>
