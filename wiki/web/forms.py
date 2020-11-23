@@ -4,7 +4,10 @@
 """
 from flask_wtf import FlaskForm
 from wtforms import BooleanField
-from wtforms import TextField
+try:
+    from wtforms import StringField as StringField
+except ImportError:
+    from wtforms import TextField as StringField
 from wtforms import TextAreaField
 from wtforms import PasswordField
 from wtforms.validators import InputRequired
@@ -16,7 +19,7 @@ from wiki.web import current_users
 
 
 class URLForm(FlaskForm):
-    url = TextField('', [InputRequired()])
+    url = StringField('', [InputRequired()])
 
     def validate_url(form, field):
         if current_wiki.exists(field.data):
@@ -27,7 +30,7 @@ class URLForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
-    term = TextField('', [InputRequired()])
+    term = StringField('', [InputRequired()])
     ignore_case = BooleanField(
         description='Ignore Case',
         # FIXME: default is not correctly populated
@@ -35,13 +38,13 @@ class SearchForm(FlaskForm):
 
 
 class EditorForm(FlaskForm):
-    title = TextField('', [InputRequired()])
+    title = StringField('', [InputRequired()])
     body = TextAreaField('', [InputRequired()])
-    tags = TextField('')
+    tags = StringField('')
 
 
 class LoginForm(FlaskForm):
-    name = TextField('', [InputRequired()])
+    name = StringField('', [InputRequired()])
     password = PasswordField('', [InputRequired()])
 
     def validate_name(form, field):

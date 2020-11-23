@@ -17,7 +17,6 @@ setup(
         'Flask>=0.9',
         'Click>=6,<7',
         'Flask-Login>=0.4',
-        'wtforms<3',
         'Flask-WTF>=0.8',
         'Markdown>=2.2.0',
         'Pygments>=1.5',
