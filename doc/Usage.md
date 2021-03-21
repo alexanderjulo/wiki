@@ -34,7 +34,20 @@ DEBUG = True                                 # default False
 ```
 
 ### 1.4. users.json
-*TODO: path, format, CRUD accounts*
+
+Users creditentials file is stored in CONTENT_DIR (right near *.md).
+Sample of 1 user `user` with password `password` looks like:
+```json
+{
+  "user": {
+    "active": true,
+    "roles": [],
+    "authentication_method": "cleartext",
+    "authenticated": true,
+    "password": "password"
+  }
+}
+```
 
 ### 1.5. Run from sources
 
