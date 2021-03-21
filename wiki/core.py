@@ -141,12 +141,13 @@ class Processor(object):
         # entries, so we have to loop over the meta values a second
         # time to put them into a dictionary in the correct order
         self.meta = OrderedDict()
-        for line in self.meta_raw.split('\n'):
-            key = line.split(':', 1)[0]
-            # markdown metadata always returns a list of lines, we will
-            # reverse that here
-            self.meta[key.lower()] = \
-                '\n'.join(self.md.Meta[key.lower()])
+        if self.md.Meta:        # skip meta-less
+            for line in self.meta_raw.split('\n'):
+                key = line.split(':', 1)[0]
+                # markdown metadata always returns a list of lines, we will
+                # reverse that here
+                self.meta[key.lower()] = \
+                    '\n'.join(self.md.Meta[key.lower()])
 
     def process_post(self):
         """
