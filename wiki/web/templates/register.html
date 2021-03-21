@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock title %}
+
+{% block content %}
+ <form class="form form-inline" method="POST">
+ 	{{ form.hidden_tag() }}
+ 	{{ form.name.label }} <br>
+ 	{{ form.name(placeholder='Username') }} <br>
+ 	{{ form.password.label }} <br>
+ 	{{ form.password(placeholder='Password') }} <br>
+ 	{{ form.password_confirm.label }} <br>
+ 	{{ form.password_confirm(placeholder='Confirm Password') }} <br>
+ 	<input type="submit" class="btn btn-primary" value="Register">
+ </form>
+{% endblock content %}

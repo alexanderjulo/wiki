@@ -9,6 +9,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
+from flask import current_app
 from flask_login import current_user
 from flask_login import login_required
 from flask_login import login_user
@@ -19,9 +20,11 @@ from wiki.web.forms import EditorForm
 from wiki.web.forms import LoginForm
 from wiki.web.forms import SearchForm
 from wiki.web.forms import URLForm
+from wiki.web.forms import RegistrationForm
 from wiki.web import current_wiki
 from wiki.web import current_users
 from wiki.web.user import protect
+from wiki.web.user import UserManager
 
 
 bp = Blueprint('wiki', __name__)
@@ -51,6 +54,7 @@ def display(url):
 
 
 @bp.route('/create/', methods=['GET', 'POST'])
+@login_required
 @protect
 def create():
     form = URLForm()
@@ -61,6 +65,7 @@ def create():
 
 
 @bp.route('/edit/<path:url>/', methods=['GET', 'POST'])
+@login_required
 @protect
 def edit(url):
     page = current_wiki.get(url)
@@ -85,6 +90,7 @@ def preview():
 
 
 @bp.route('/move/<path:url>/', methods=['GET', 'POST'])
+@login_required
 @protect
 def move(url):
     page = current_wiki.get_or_404(url)
@@ -97,6 +103,7 @@ def move(url):
 
 
 @bp.route('/delete/<path:url>/')
+@login_required
 @protect
 def delete(url):
     page = current_wiki.get_or_404(url)
@@ -156,9 +163,17 @@ def user_index():
     pass
 
 
-@bp.route('/user/create/')
+@bp.route('/user/create/', methods=['GET', 'POST'])
 def user_create():
-    pass
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = form.name.data
+        password = form.password.data
+        UserManager(current_app.config['CONTENT_DIR']).add_user(name=user, password=password)
+        # user.set('authenticated', True)
+        flash('Registration successful.', 'success')
+        return redirect(request.args.get("next") or url_for('wiki.index'))
+    return render_template('register.html', form=form)
 
 
 @bp.route('/user/<int:user_id>/')
@@ -167,6 +182,7 @@ def user_admin(user_id):
 
 
 @bp.route('/user/delete/<int:user_id>/')
+@login_required
 def user_delete(user_id):
     pass
 
