@@ -61,15 +61,13 @@ app.run()   # add host=..., port=..., debug=...
 ## 2. Wiki features
 
 ### 2.1. Local URLs
-Wiki accepts almost any target in link definitions `[Link name](taget)`.  
-Target name `target` stay `target.md` file.  
-So target can be anything that OS/filesystem allows for filenames - `CamelCase With Spaces and non-ASCII 姓名`.  
-Excepting these limitations:
+- `[[Wiki Links]] stay [[wiki_link]] (lowercase and undescored)
+- `[Ordinary links](Target File)` stay `<currentpage>/Target File.md`
 - root page is exectly `home.md`
-- folders and files right in CONTENT_DIR connot be named as reserved actions:
+- folders and files right in CONTENT_DIR root connot be named as reserved actions:
   *home, index, create, edit, preview, move, delete, tags, tag, search, user*.
 
 ### 2.2. Importing *.md
-You can just copy your existant *.md into CONTENT_DIR but with the only (yet) conditions:
-- file *must* have [meta-data](https://python-markdown.github.io/extensions/meta_data/) line `title: ...`
-- and *can* have meta-data line `tags: ...`
+You can just copy your existant *.md into CONTENT_DIR but with the only conditions:
+- file *should* have *optional* [meta-data](https://python-markdown.github.io/extensions/meta_data/) lines `title: ...` and `tags: ...`
+- file can be `Camel Case.md`, `Camel_Case.md`, `camel case.md` or `camel_case.md`, but `[[Wiki Link]]` will try to get `wiki_link.md` only.
