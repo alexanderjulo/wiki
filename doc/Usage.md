@@ -29,7 +29,7 @@ SECRET_KEY = 'an unique and long key'        # mandatory
 TITLE = 'Wiki title'                         # default 'wiki'
 CONTENT_DIR = '/path/to/markdown/files/dir'  # default = --directory above
 DEFAULT_AUTHENTICATION_METHOD='hash'         # 'hash' or 'cleartext' (default)
-# PRIVATE=?                                  # don't know what is it
+PRIVATE=True                                 # Access denied for anonymous' (default=False)
 DEBUG = True                                 # default False
 ```
 
