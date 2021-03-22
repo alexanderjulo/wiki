@@ -14,7 +14,6 @@ from wiki.core import Processor
 
 from . import WikiBaseTestCase
 
-
 PAGE_CONTENT = u"""\
 title: Test
 tags: one, two, 3, jö
@@ -28,11 +27,9 @@ PAGE_CONTENT_INVALID = u"""\
 Hello, how are you guys?
 """
 
-
 CONTENT_HTML = u"""\
 <p>Hello, how are you guys?</p>
 <p><strong>Is it not <em>magnificent</em></strong>?</p>"""
-
 
 WIKILINK_PAGE_CONTENT = u"""\
 title: link
@@ -100,7 +97,7 @@ class URLCleanerTestCase(TestCase):
             other spaces correctly substituted.
         """
         assert (clean_url('   /hello you/wonderful/person ')
-                    == '/hello_you/wonderful/person')
+                == '/hello_you/wonderful/person')
 
     def test_handle_uppercase(self):
         """
@@ -227,7 +224,6 @@ class InvalidPageTestCase(WikiBaseTestCase):
         super(InvalidPageTestCase, self).setUp()
 
         self.page_path = self.create_file('test.md', self.page_content)
-
 
     def test_page_loading_fails(self):
         """

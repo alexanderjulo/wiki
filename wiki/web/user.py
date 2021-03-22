@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     User classes & helpers
     ~~~~~~~~~~~~~~~~~~~~~~
@@ -12,9 +13,9 @@ from flask import current_app
 from flask_login import current_user
 
 
-
 class UserManager(object):
     """A very simple user Manager, that saves it's data as json."""
+
     def __init__(self, path):
         self.file = os.path.join(path, 'users.json')
 
@@ -30,7 +31,7 @@ class UserManager(object):
             f.write(json.dumps(data, indent=2))
 
     def add_user(self, name, password,
-                 active=True, roles=[], authentication_method=None):
+                 active=True, roles=(), authentication_method=None):
         users = self.read()
         if users.get(name):
             return False
@@ -145,4 +146,5 @@ def protect(f):
         if current_app.config.get('PRIVATE') and not current_user.is_authenticated:
             return current_app.login_manager.unauthorized()
         return f(*args, **kwargs)
+
     return wrapper

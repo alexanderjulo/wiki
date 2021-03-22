@@ -8,3 +8,4 @@ content/
 .eggs
 *.egg-info
 dist/
+.idea

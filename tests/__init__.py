@@ -2,7 +2,7 @@ from io import open
 import os
 import shutil
 from tempfile import mkdtemp
-from tempfile import mkstemp
+# from tempfile import mkstemp
 from unittest import TestCase
 
 from wiki.core import Wiki
@@ -18,7 +18,6 @@ DEFAULT_AUTHENTICATION_METHOD='hash'
 
 
 class WikiBaseTestCase(TestCase):
-
     #: The contents of the ``config.py`` file.
     config_content = CONFIGURATION
 
@@ -68,7 +67,6 @@ class WikiBaseTestCase(TestCase):
             fhd.write(content)
 
         return path
-
 
     def tearDown(self):
         """

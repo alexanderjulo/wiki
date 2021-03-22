@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     Wiki core
     ~~~~~~~~~
@@ -97,7 +98,7 @@ class Processor(object):
             'fenced_code',
             'meta',
             'tables',
-            'mdx_math' # mathjax support
+            'mdx_math'  # mathjax support
         ])
         self.input = text
         self.markdown = None
@@ -123,7 +124,6 @@ class Processor(object):
         """
         self.html = self.md.convert(self.pre)
 
-
     def split_raw(self):
         """
             Split text into raw meta and content.
@@ -141,12 +141,13 @@ class Processor(object):
         # entries, so we have to loop over the meta values a second
         # time to put them into a dictionary in the correct order
         self.meta = OrderedDict()
-        for line in self.meta_raw.split('\n'):
-            key = line.split(':', 1)[0]
-            # markdown metadata always returns a list of lines, we will
-            # reverse that here
-            self.meta[key.lower()] = \
-                '\n'.join(self.md.Meta[key.lower()])
+        if self.md.Meta:        # skip meta-less
+            for line in self.meta_raw.split('\n'):
+                key = line.split(':', 1)[0]
+                # markdown metadata always returns a list of lines, we will
+                # reverse that here
+                self.meta[key.lower()] = \
+                    '\n'.join(self.md.Meta[key.lower()])
 
     def process_post(self):
         """
@@ -174,6 +175,9 @@ class Processor(object):
 
 class Page(object):
     def __init__(self, path, url, new=False):
+        self.content = None
+        self._html = None
+        self.body = None
         self.path = path
         self.url = url
         self._meta = OrderedDict()
@@ -321,7 +325,7 @@ class Wiki(object):
         root = os.path.abspath(self.root)
         for cur_dir, _, files in os.walk(root):
             # get the url of the current directory
-            cur_dir_url = cur_dir[len(root)+1:]
+            cur_dir_url = cur_dir[len(root) + 1:]
             for cur_file in files:
                 path = os.path.join(cur_dir, cur_file)
                 if cur_file.endswith('.md'):
@@ -382,7 +386,7 @@ class Wiki(object):
                 tagged.append(page)
         return sorted(tagged, key=lambda x: x.title.lower())
 
-    def search(self, term, ignore_case=True, attrs=['title', 'tags', 'body']):
+    def search(self, term, ignore_case=True, attrs=('title', 'tags', 'body')):
         pages = self.index()
         regex = re.compile(term, re.IGNORECASE if ignore_case else 0)
         matched = []

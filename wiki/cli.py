@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     CLI
     ~~~
@@ -7,6 +8,7 @@ import os
 import click
 from wiki.web import create_app
 
+
 @click.group()
 @click.option('--directory', type=click.Path(exists=True), default=None)
 @click.pass_context
@@ -15,6 +17,7 @@ def main(ctx, directory):
         Base setup for all the following commands.
 
         \b
+        :param ctx: context?
         :param str directory: the directory to run wiki in, optional.
             If no directory is provided the current directory will be
             used.
@@ -34,6 +37,7 @@ def web(ctx, debug, host, port):
         Run the web app.
 
         \b
+        :param ctx: context?
         :param bool debug: whether or not to run the web app in debug
             mode.
         :param str host: Set the host to 0.0.0.0 to connect from outside. 

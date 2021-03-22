@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 from flask import current_app
@@ -9,8 +10,10 @@ from werkzeug.local import LocalProxy
 from wiki.core import Wiki
 from wiki.web.user import UserManager
 
+
 class WikiError(Exception):
     pass
+
 
 def get_wiki():
     wiki = getattr(g, '_wiki', None)
@@ -18,13 +21,16 @@ def get_wiki():
         wiki = g._wiki = Wiki(current_app.config['CONTENT_DIR'])
     return wiki
 
+
 current_wiki = LocalProxy(get_wiki)
+
 
 def get_users():
     users = getattr(g, '_users', None)
     if users is None:
         users = g._users = UserManager(current_app.config['CONTENT_DIR'])
     return users
+
 
 current_users = LocalProxy(get_users)
 
@@ -51,6 +57,7 @@ def create_app(directory):
 
 loginmanager = LoginManager()
 loginmanager.login_view = 'wiki.user_login'
+
 
 @loginmanager.user_loader
 def load_user(name):
