@@ -15,6 +15,9 @@ Pre-conditions:
 
     `/etc/httpd/conf.d/wiki.conf`:
     ```apache
+    # don't forget 2 lines below to prevent non-ascii filenames error
+    WSGIDaemonProcess apache lang=en_US.UTF-8 locale=C.UTF-8
+    WSGIProcessGroup apache
     WSGIScriptAlias /notes /user/share/wiki/wiki.wsgi
     <Location /notes>
        Require all granted
