@@ -42,6 +42,10 @@ def home():
 @bp.route('/index/')
 @protect
 def index():
+    import locale
+    current_app.logger.info("defaultlocale: {}".format(locale.getdefaultlocale()))
+    current_app.logger.info("locale: {}".format(locale.getlocale()))
+    current_app.logger.info("preferredencoding: {}".format(locale.getpreferredencoding()))
     pages = current_wiki.index()
     return render_template('index.html', pages=pages)
 
