@@ -1,3 +1,6 @@
+from wiki.web import create_app
+from wiki.web.user import UserManager
+
 from . import WikiBaseTestCase
 
 
@@ -39,4 +42,25 @@ class AuthenticationTestCase(WikiBaseTestCase):
         """
         rsp = self.app.get('/')
         assert rsp.status_code == 302
-        assert rsp.headers['Location'] == "http://localhost/user/login/?next=%2F"
+        assert rsp.headers['Location'] == "/user/login/?next=%2F"
+
+    def test_user_can_log_in_and_out(self):
+        app = create_app(self.rootdir)
+        app.config['WTF_CSRF_ENABLED'] = False
+        with app.app_context():
+            user = UserManager(self.rootdir).add_user('alice', 'secret')
+            assert user.is_active is True
+            assert user.is_authenticated is False
+
+        client = app.test_client()
+        rsp = client.post(
+            '/user/login/',
+            data={'name': 'alice', 'password': 'secret'},
+        )
+        assert rsp.status_code == 302
+        assert rsp.headers['Location'] == '/index/'
+        assert client.get('/').status_code == 200
+
+        rsp = client.get('/user/logout/')
+        assert rsp.status_code == 302
+        assert client.get('/').status_code == 302
