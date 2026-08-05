@@ -6,6 +6,7 @@ import os
 import json
 import binascii
 import hashlib
+import hmac
 from functools import wraps
 
 from flask import current_app
@@ -92,12 +93,15 @@ class User(object):
     def save(self):
         self.manager.update(self.name, self.data)
 
+    @property
     def is_authenticated(self):
-        return self.data.get('authenticated')
+        return self.data.get('authenticated', False)
 
+    @property
     def is_active(self):
-        return self.data.get('active')
+        return self.data.get('active', False)
 
+    @property
     def is_anonymous(self):
         return False
 
@@ -129,14 +133,14 @@ def make_salted_hash(password, salt=None):
         salt = os.urandom(64)
     d = hashlib.sha512()
     d.update(salt[:32])
-    d.update(password)
+    d.update(password.encode('utf-8'))
     d.update(salt[32:])
-    return binascii.hexlify(salt) + d.hexdigest()
+    return binascii.hexlify(salt).decode('ascii') + d.hexdigest()
 
 
 def check_hashed_password(password, salted_hash):
     salt = binascii.unhexlify(salted_hash[:128])
-    return make_salted_hash(password, salt) == salted_hash
+    return hmac.compare_digest(make_salted_hash(password, salt), salted_hash)
 
 
 def protect(f):

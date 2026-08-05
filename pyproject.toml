@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wiki2"
+version = "4.0.0"
+description = "Simple Python Markdown wiki with a web UI"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+authors = [
+    {name = "Alexander Jung-Loddenkemper", email = "alexander@julo.ch"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "Flask>=3.1.3,<4",
+    "Click>=8.4.2,<9",
+    "Flask-Login>=0.6.3,<0.7",
+    "Flask-WTF>=1.3.0,<2",
+    "Markdown>=3.10.3,<4",
+    "Pygments>=2.20.0,<3",
+    "WTForms>=3.2.2,<4",
+    "Werkzeug>=3.1.8,<4",
+    "python-markdown-math>=0.9,<1",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=9.1.1,<10",
+]
+
+[project.urls]
+Homepage = "https://github.com/alexanderjulo/wiki"
+Repository = "https://github.com/alexanderjulo/wiki"
+
+[project.scripts]
+wiki = "wiki.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["wiki", "wiki.*"]
+
+[tool.pytest.ini_options]
+addopts = ["--verbose"]
+testpaths = ["tests"]
