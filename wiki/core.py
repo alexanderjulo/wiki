@@ -254,6 +254,19 @@ class Wiki(object):
         self.root = root
 
     def path(self, url):
+        # Resolve symlinks as well as '..'; compare path components, not
+        # string prefixes (content-evil is not inside content).
+        root = os.path.realpath(self.root)
+        target = os.path.realpath(os.path.join(root, url + '.md'))
+        try:
+            contained = os.path.commonpath((root, target)) == root
+        except ValueError:
+            # On Windows, paths on different drives have no common path.
+            contained = False
+        if not contained:
+            raise RuntimeError(
+                'Possible access attempt outside content directory: '
+                '%s' % url)
         return os.path.join(self.root, url + '.md')
 
     def exists(self, url):
@@ -261,8 +274,8 @@ class Wiki(object):
         return os.path.exists(path)
 
     def get(self, url):
-        path = os.path.join(self.root, url + '.md')
-        if self.exists(url):
+        path = self.path(url)
+        if os.path.exists(path):
             return Page(path, url)
         return None
 
@@ -280,20 +293,8 @@ class Wiki(object):
 
     def move(self, url, newurl):
         newurl = clean_url(newurl)
-        source = os.path.join(self.root, url) + '.md'
-        target = os.path.join(self.root, newurl) + '.md'
-        # normalize root path (just in case somebody defined it absolute,
-        # having some '../' inside) to correctly compare it to the target
-        root = os.path.normpath(self.root)
-        # get root path longest common prefix with normalized target path
-        common = os.path.commonprefix((root, os.path.normpath(target)))
-        # common prefix length must be at least as root length is
-        # otherwise there are probably some '..' links in target path leading
-        # us outside defined root directory
-        if len(common) < len(root):
-            raise RuntimeError(
-                'Possible write attempt outside content directory: '
-                '%s' % newurl)
+        source = self.path(url)
+        target = self.path(newurl)
         # create folder if it does not exists yet
         folder = os.path.dirname(target)
         if not os.path.exists(folder):
@@ -325,7 +326,13 @@ class Wiki(object):
             for cur_file in files:
                 path = os.path.join(cur_dir, cur_file)
                 if cur_file.endswith('.md'):
-                    url = clean_url(os.path.join(cur_dir_url, cur_file[:-3]))
+                    relative = os.path.join(cur_dir_url, cur_file[:-3])
+                    url = clean_url(relative)
+                    try:
+                        path = self.path(relative)
+                    except RuntimeError:
+                        # An outside symlink must not leak through index/search.
+                        continue
                     try:
                         page = Page(path, url)
                         pages.append(page)
