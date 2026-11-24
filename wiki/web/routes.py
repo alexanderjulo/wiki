@@ -3,6 +3,7 @@
     ~~~~~~
 """
 from flask import Blueprint
+from flask import abort
 from flask import flash
 from flask import redirect
 from flask import render_template
@@ -62,16 +63,20 @@ def create():
 @bp.route('/edit/<path:url>/', methods=['GET', 'POST'])
 @protect
 def edit(url):
-    page = current_wiki.get(url)
-    form = EditorForm(obj=page)
-    if form.validate_on_submit():
-        if not page:
-            page = current_wiki.get_bare(url)
-        form.populate_obj(page)
-        page.save()
-        flash('"%s" was saved.' % page.title, 'success')
-        return redirect(url_for('wiki.display', url=url))
-    return render_template('editor.html', form=form, page=page)
+    try:
+        page = current_wiki.get(url)
+        form = EditorForm(obj=page)
+        if form.validate_on_submit():
+            if not page:
+                page = current_wiki.get_bare(url)
+            form.populate_obj(page)
+            page.save()
+            flash('"%s" was saved.' % page.title, 'success')
+            return redirect(url_for('wiki.display', url=url))
+        return render_template('editor.html', form=form, page=page)
+    except ValueError:
+        # Page name escapes the content directory (Wiki.path rejects it).
+        abort(404)
 
 
 @bp.route('/preview/', methods=['POST'])
@@ -90,7 +95,10 @@ def move(url):
     form = URLForm(obj=page)
     if form.validate_on_submit():
         newurl = form.url.data
-        renamed = current_wiki.move(url, newurl)
+        try:
+            renamed = current_wiki.move(url, newurl)
+        except ValueError:
+            abort(404)
         return redirect(url_for('wiki.display', url=renamed))
     return render_template('move.html', form=form, page=page)
 

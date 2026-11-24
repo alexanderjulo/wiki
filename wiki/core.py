@@ -254,15 +254,34 @@ class Wiki(object):
         self.root = root
 
     def path(self, url):
-        return os.path.join(self.root, url + '.md')
+        # Resolve the page file strictly inside the content directory. Without
+        # this, Flask's <path:url> accepts "../" and absolute paths, so /edit/
+        # could write .md files anywhere the process can reach.
+        if not url or "\x00" in url or url.startswith(("/", "\\")):
+            raise ValueError("invalid page name")
+        root = os.path.realpath(self.root)
+        path = os.path.realpath(os.path.join(root, url + '.md'))
+        try:
+            inside = os.path.commonpath([root, path]) == root
+        except ValueError:
+            inside = False
+        if not inside:
+            raise ValueError("page name escapes the content directory")
+        return path
 
     def exists(self, url):
-        path = self.path(url)
+        try:
+            path = self.path(url)
+        except ValueError:
+            return False
         return os.path.exists(path)
 
     def get(self, url):
-        path = os.path.join(self.root, url + '.md')
-        if self.exists(url):
+        try:
+            path = self.path(url)
+        except ValueError:
+            return None
+        if os.path.exists(path):
             return Page(path, url)
         return None
 
@@ -280,20 +299,11 @@ class Wiki(object):
 
     def move(self, url, newurl):
         newurl = clean_url(newurl)
-        source = os.path.join(self.root, url) + '.md'
-        target = os.path.join(self.root, newurl) + '.md'
-        # normalize root path (just in case somebody defined it absolute,
-        # having some '../' inside) to correctly compare it to the target
-        root = os.path.normpath(self.root)
-        # get root path longest common prefix with normalized target path
-        common = os.path.commonprefix((root, os.path.normpath(target)))
-        # common prefix length must be at least as root length is
-        # otherwise there are probably some '..' links in target path leading
-        # us outside defined root directory
-        if len(common) < len(root):
-            raise RuntimeError(
-                'Possible write attempt outside content directory: '
-                '%s' % newurl)
+        # self.path() validates both names against the content directory, so a
+        # "../content_backup/x" target can no longer slip past a string-prefix
+        # check (os.path.commonprefix compares characters, not path parts).
+        source = self.path(url)
+        target = self.path(newurl)
         # create folder if it does not exists yet
         folder = os.path.dirname(target)
         if not os.path.exists(folder):
